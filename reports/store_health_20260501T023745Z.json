@@ -1,0 +1,21 @@
+{
+  "generated_at": "2026-05-01T02:37:43.718228+00:00",
+  "shop_id": 1288767930,
+  "sections": {
+    "orders": {
+      "count": 0,
+      "window_days": 1,
+      "sample": []
+    },
+    "inventory": {
+      "total_items": 0,
+      "low_stock_items": 0,
+      "threshold": 5
+    },
+    "api_health": {
+      "orders_ok": true,
+      "inventory_ok": true
+    }
+  },
+  "overall_status": "healthy"
+}

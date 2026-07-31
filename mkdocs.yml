@@ -1,0 +1,27 @@
+site_name: Laura Docs
+site_description: Autonomous Shopee Seller Agent
+theme:
+  name: material
+  palette:
+    scheme: slate
+    primary: indigo
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.expand
+repo_url: https://github.com/Meketref007/Laura
+markdown_extensions:
+  - admonition
+  - codehilite
+  - toc:
+      permalink: true
+nav:
+  - Home: index.md
+  - Installation: installation.md
+  - Configuration: configuration.md
+  - CLI Reference: cli.md
+  - Dashboard: dashboard.md
+  - Skills & GOAP: skills.md
+  - Deployment: deployment.md
+  - API Reference: api.md
+  - Architecture: architecture.md

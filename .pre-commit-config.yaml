@@ -1,0 +1,25 @@
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.4.0
+    hooks:
+      - id: ruff
+        args: [--fix, --line-length=120]
+      - id: ruff-format
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-json
+      - id: check-added-large-files
+        args: [--maxkb=500]
+  - repo: local
+    hooks:
+      - id: pytest
+        name: pytest
+        entry: python -m pytest tests/ -q --tb=short --ignore=tests/_archive -k "not test_memory_summary_command"
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [push]

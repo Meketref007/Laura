@@ -1,0 +1,7 @@
+/* Laura Companion — Seller Center injected styles */
+#laura-status-bar:hover {
+  opacity: 1;
+}
+#laura-status-bar a:hover {
+  text-decoration: underline !important;
+}

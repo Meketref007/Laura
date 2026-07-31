@@ -1,0 +1,33 @@
+[Unit]
+Description=Ollama - Local LLM Service for Laura
+Documentation=https://github.com/ollama/ollama
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=shopee
+Group=shopee
+WorkingDirectory=/home/shopee
+EnvironmentFile=-/home/shopee/agente/.env
+ExecStart=/usr/local/bin/ollama serve
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=ollama
+
+# Security
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=yes
+ReadWritePaths=/home/shopee/.ollama /home/shopee/agente/reports
+
+# Resource limits
+MemoryMax=6G
+MemorySwapMax=0
+LimitNOFILE=65536
+
+[Install]
+WantedBy=multi-user.target

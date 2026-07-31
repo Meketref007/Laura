@@ -1,0 +1,14 @@
+{
+  "timestamp": "2026-07-31T11:30:08.226039+00:00",
+  "state": {
+    "stock_checked": true,
+    "margin_protected": true,
+    "_last_plan_ok": true,
+    "_last_plan_skills": [
+      "low_stock_alert",
+      "protect_margin"
+    ],
+    "_last_run": "2026-07-31T11:30:08.226039+00:00",
+    "orders_pending_ship": false
+  }
+}

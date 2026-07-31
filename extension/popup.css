@@ -1,0 +1,60 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  width: 380px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: #0f172a;
+  color: #e2e8f0;
+  padding: 12px;
+}
+header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 16px;
+}
+header h1 { font-size: 20px; font-weight: 700; color: #f8fafc; }
+.badge {
+  font-size: 11px; padding: 3px 10px; border-radius: 10px;
+  background: #6b7280; color: #fff; font-weight: 600;
+}
+.badge.online { background: #22c55e; }
+.badge.warn { background: #f59e0b; }
+.badge.offline { background: #6b7280; }
+#health-section {
+  display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 16px;
+}
+.metric-card {
+  background: #1e293b; border-radius: 8px; padding: 10px; text-align: center;
+}
+.metric-card.ok .metric-value { color: #22c55e; }
+.metric-card.fail .metric-value { color: #ef4444; }
+.metric-label { display: block; font-size: 10px; text-transform: uppercase; color: #94a3b8; margin-bottom: 4px; }
+.metric-value { font-size: 24px; font-weight: 700; color: #f8fafc; }
+.metric-card.small .metric-value { font-size: 18px; }
+h2 { font-size: 13px; text-transform: uppercase; color: #94a3b8; margin-bottom: 8px; margin-top: 12px; }
+#skills-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+.progress-bar {
+  height: 8px; background: #1e293b; border-radius: 4px; overflow: hidden; margin-bottom: 4px;
+}
+.progress-fill {
+  height: 100%; background: #22c55e; border-radius: 4px; transition: width 0.5s;
+  width: 0%;
+}
+.detail-text { font-size: 12px; color: #94a3b8; }
+.config-row {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 8px;
+}
+.config-row label { font-size: 12px; color: #94a3b8; min-width: 90px; }
+.config-row input {
+  flex: 1; background: #1e293b; border: 1px solid #334155; border-radius: 4px;
+  padding: 4px 8px; color: #e2e8f0; font-size: 12px;
+}
+.config-row button, footer button {
+  background: #3b82f6; color: #fff; border: none; border-radius: 4px;
+  padding: 4px 10px; cursor: pointer; font-size: 12px;
+}
+.config-row button:hover, footer button:hover { background: #2563eb; }
+footer {
+  display: flex; justify-content: space-between; align-items: center; margin-top: 16px; padding-top: 12px;
+  border-top: 1px solid #1e293b;
+}
+footer a { color: #3b82f6; text-decoration: none; font-size: 13px; }
+footer a:hover { text-decoration: underline; }

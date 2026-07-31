@@ -1,0 +1,74 @@
+{
+  "input": {
+    "shop_id": 1288767930,
+    "generated_at": "2026-05-23T02:01:54.746284+00:00",
+    "orders_count": 4,
+    "orders_sample": [
+      {
+        "order_sn": "26052355UF0C6F",
+        "booking_sn": ""
+      },
+      {
+        "order_sn": "2605224RV3MKC2",
+        "booking_sn": ""
+      },
+      {
+        "order_sn": "2605224E0C6FX1",
+        "booking_sn": ""
+      },
+      {
+        "order_sn": "26052246FHJVB5",
+        "booking_sn": ""
+      }
+    ],
+    "products_count": 20,
+    "products_sample": [
+      {
+        "item_id": 19099595489,
+        "item_status": "NORMAL",
+        "update_time": 1779287471,
+        "tag": {
+          "kit": false
+        }
+      },
+      {
+        "item_id": 58256032299,
+        "item_status": "NORMAL",
+        "update_time": 1779220272,
+        "tag": {
+          "kit": false
+        }
+      },
+      {
+        "item_id": 22193703400,
+        "item_status": "NORMAL",
+        "update_time": 1779207552,
+        "tag": {
+          "kit": false
+        }
+      }
+    ]
+  },
+  "analysis": {
+    "decision": "MONITOR_ONLY",
+    "action": "monitor_only",
+    "priority": "MEDIUM",
+    "mode": "dry_run",
+    "metrics": {
+      "orders_count": 4,
+      "products_count": 20
+    },
+    "shop_status": "Fallback mode - LLM unavailable",
+    "alerts": [
+      "Fallback: Modelo Ollama 'mistral' não carregado em RAM; rode `ollama run mistral` antes de analisar."
+    ],
+    "top_action": "Maintain current operations and retry LLM analysis when service recovers",
+    "reasoning": "Heurístico fallback mode ativado. Motivo: Modelo Ollama 'mistral' não carregado em RAM; rode `ollama run mistral` antes de analisar.",
+    "confidence": 0.3,
+    "timestamp": "2026-05-23T02:01:57.175118+00:00",
+    "model": "mistral (fallback)",
+    "prompt_type": "daily_report",
+    "inference_time_ms": 0,
+    "raw_response": ""
+  }
+}

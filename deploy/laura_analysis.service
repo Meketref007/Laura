@@ -1,0 +1,23 @@
+[Unit]
+Description=Laura Daily Store Analysis Service (LLM-driven insights)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=shopee
+WorkingDirectory=/home/shopee/agente
+ExecStart=/home/shopee/agente/scripts/laura_analysis_daily.sh
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=laura-analysis
+EnvironmentFile=/home/shopee/agente/.env
+
+# Limits
+TimeoutStartSec=600
+Environment="PROMPT_TYPE=daily_report"
+Environment="MODEL=mistral"
+Environment="DAYS=1"
+
+[Install]
+WantedBy=multi-user.target

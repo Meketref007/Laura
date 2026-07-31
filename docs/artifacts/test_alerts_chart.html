@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gráfico de Alertas (30 dias)</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+            max-width: 800px;
+            width: 100%;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+        }
+        .chart-container {
+            position: relative;
+            height: 400px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Gráfico de Alertas (30 dias)</h1>
+        <div class="chart-container">
+            
+        <canvas id="chart_Alertas_-_Últimos_30_Dias"></canvas>
+        <script>
+            new Chart(document.getElementById("chart_Alertas_-_Últimos_30_Dias"), {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Contagem de Alertas',
+                        data: [],
+                        borderColor: '#ff6b6b',
+                        backgroundColor: '#ff6b6b20',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 4,
+                        pointBackgroundColor: '#ff6b6b',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {display: true, position: 'top'},
+                        title: {display: true, text: 'Alertas - Últimos 30 Dias', font: {size: 14, weight: 'bold'}}
+                    },
+                    scales: {
+                        y: {beginAtZero: true},
+                        x: {title: {display: true, text: 'Tempo'}}
+                    }
+                }
+            });
+        </script>
+        
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,25 @@
+[Unit]
+Description=Laura — Autonomous Shopee Seller Agent
+Documentation=https://github.com/anomalyco/laura
+After=network.target ollama.service
+Wants=ollama.service
+StartLimitIntervalSec=300
+StartLimitBurst=5
+
+[Service]
+Type=simple
+User=laura
+Group=laura
+WorkingDirectory=/opt/laura
+ExecStart=/opt/laura/.venv/bin/python -m shopee_agent.laura_daemon
+ExecReload=/bin/kill -HUP $MAINPID
+Restart=on-failure
+RestartSec=10
+StandardOutput=append:/var/log/laura/laura.log
+StandardError=append:/var/log/laura/error.log
+EnvironmentFile=/opt/laura/.env
+Environment=PYTHONUNBUFFERED=1
+LimitNOFILE=65536
+
+[Install]
+WantedBy=multi-user.target

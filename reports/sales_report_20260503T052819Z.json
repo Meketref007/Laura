@@ -1,0 +1,36 @@
+{
+  "generated_at": "2026-05-03T05:28:19.152042+00:00",
+  "shop_id": 1288767930,
+  "days": 1,
+  "orders_count": 7,
+  "orders": [
+    {
+      "order_sn": "260503DD1MBBUR",
+      "booking_sn": ""
+    },
+    {
+      "order_sn": "260503D7E78M39",
+      "booking_sn": ""
+    },
+    {
+      "order_sn": "260503D68961HR",
+      "booking_sn": ""
+    },
+    {
+      "order_sn": "260502CP6MM7D4",
+      "booking_sn": ""
+    },
+    {
+      "order_sn": "260502CMBR5TKY",
+      "booking_sn": ""
+    },
+    {
+      "order_sn": "260502CJVAU645",
+      "booking_sn": ""
+    },
+    {
+      "order_sn": "260502CG1SN75W",
+      "booking_sn": ""
+    }
+  ]
+}

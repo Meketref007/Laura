@@ -1,0 +1,20 @@
+{
+  "expo": {
+    "name": "Laura Mobile",
+    "slug": "laura-mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "backgroundColor": "#0f172a",
+    "splash": {
+      "backgroundColor": "#0f172a"
+    },
+    "assetBundlePatterns": ["**/*"],
+    "ios": { "supportsTablet": true, "bundleIdentifier": "com.laura.mobile" },
+    "android": {
+      "adaptiveIcon": { "backgroundColor": "#0f172a" },
+      "package": "com.laura.mobile"
+    }
+  }
+}

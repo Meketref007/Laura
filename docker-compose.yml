@@ -1,0 +1,43 @@
+version: "3.8"
+
+services:
+  laura:
+    build: .
+    ports:
+      - "8888:8888"
+    volumes:
+      - ./reports:/app/reports
+      - ./plugins:/app/plugins
+      - ./data:/app/data
+    environment:
+      - LAURA_OLLAMA_HOST=http://ollama:11434
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN:-}
+      - DASHBOARD_API_KEY=${DASHBOARD_API_KEY:-}
+    depends_on:
+      ollama:
+        condition: service_started
+    restart: unless-stopped
+
+  ollama:
+    image: ollama/ollama:latest
+    profiles:
+      - ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    profiles:
+      - redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+
+volumes:
+  ollama_data:
+  redis_data:

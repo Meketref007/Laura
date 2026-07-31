@@ -1,0 +1,112 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+.venv/
+venv/
+.venv_test/
+*.egg-info/
+dist/
+build/
+
+# Environment & Secrets
+.env
+.env.bak
+.env.env.bak
+.env.*.local
+.env.example.pause_hook
+
+# Testing
+.pytest_cache/
+.coverage
+.ruff_cache/
+htmlcov/
+.tox/
+
+# IDE & Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.log
+*.out
+*.jsonl
+nohup.out
+*.lock
+
+# Runtime data archives
+logs/*
+!logs/.gitkeep
+backups/*
+!backups/.gitkeep
+backups/archive/
+logs/archive/
+
+# Reports runtime data (gitignored)
+reports/*.jsonl
+reports/*.state
+reports/*_history.json
+reports/*_latest.json
+reports/webhooks/
+reports/profitability_ingest_archive/
+reports/api_cache/
+reports/approvals/
+reports/weekly_pdfs/
+reports/laura_incident_*/
+reports/*.db
+
+# SQLite databases (runtime)
+data/*.db
+data/session_data.json
+data/spc_cds_cache*.txt
+
+# Tools & Binaries (excluded)
+tools/cloudflared
+tools/*.deb
+
+# Secrets (never commit)
+secrets/*
+!secrets/.gitkeep
+
+# Build artifacts
+*.exe
+cloudflared.exe
+frontend/dist/
+
+# Test artifacts
+reports/_test_*
+tests/_test_*.db
+
+# Coverage / CI reports
+junit.xml
+.coverage
+htmlcov/
+
+# PID / Launcher files
+*.pid
+*.vbs
+*.pyw
+
+# Temp
+tmp/
+test.txt
+_backup_info.json
+iniciar_daemon.ps1
+setup_windows_service.ps1
+deploy.sh
+dashboard.html
+
+# Report bot logs
+reports/bot_output.log
+reports/cloudflared.log
+

@@ -1,0 +1,19 @@
+[Unit]
+Description=Laura daily sales report
+After=network.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=/home/shopee/agente
+# Load environment from .env if present
+EnvironmentFile=/home/shopee/agente/.env
+# Exec the cron wrapper script
+ExecStart=/home/shopee/agente/scripts/laura_reports_cron.sh
+# Optionally set User/Group for production (uncomment and set appropriately)
+# User=your_user
+# Group=your_group
+Nice=10
+TimeoutStartSec=300
+
+[Install]
+WantedBy=multi-user.target

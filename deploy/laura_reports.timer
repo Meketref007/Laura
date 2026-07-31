@@ -1,0 +1,12 @@
+[Unit]
+Description=Schedule Laura daily sales report
+
+[Timer]
+# Run at 05:00 UTC daily
+OnCalendar=*-*-* 05:00:00
+Persistent=true
+RandomizedDelaySec=30m
+Unit=laura_reports.service
+
+[Install]
+WantedBy=timers.target

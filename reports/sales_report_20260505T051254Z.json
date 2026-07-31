@@ -1,0 +1,20 @@
+{
+  "generated_at": "2026-05-05T05:12:54.877122+00:00",
+  "shop_id": 1288767930,
+  "days": 1,
+  "orders_count": 3,
+  "orders": [
+    {
+      "order_sn": "260505JXA11TH0",
+      "booking_sn": ""
+    },
+    {
+      "order_sn": "260504HMTP74S4",
+      "booking_sn": ""
+    },
+    {
+      "order_sn": "260504HJAEYHXF",
+      "booking_sn": ""
+    }
+  ]
+}

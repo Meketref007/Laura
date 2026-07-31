@@ -1,0 +1,138 @@
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "laura"
+version = "3.0.0"
+description = "Laura — Autonomous Shopee Seller Agent"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+  "requests>=2.31.0",
+  "python-dotenv>=1.0.0",
+  "click>=8.1.0",
+  "tabulate>=0.9.0",
+  "fastapi>=0.115.0",
+  "uvicorn>=0.30.0",
+  "websocket-client>=1.8.0",
+  "pytest>=7.4.0",
+  "pytest-cov>=4.1.0",
+  "openpyxl>=3.1.0",
+  "reportlab>=4.0.0",
+  "anthropic>=0.25.0",
+  "annoy>=1.17.0",
+  "pillow>=10.0.0",
+  "opencv-python-headless>=4.8.0",
+  "playwright>=1.40.0",
+]
+
+[project.scripts]
+shopee-agent = "shopee_agent.cli:main"
+laura = "shopee_agent.cli:main"
+
+[project.optional-dependencies]
+vision = [
+  "pytesseract>=0.3.10",
+]
+dev = [
+  "pytest>=7.0",
+  "pytest-asyncio",
+  "pytest-xdist>=3.5",
+  "ruff>=0.4.0",
+  "mypy>=1.8",
+  "types-requests",
+  "types-PyYAML",
+  "types-setuptools",
+  "pre-commit",
+]
+docker = [
+  "uvicorn",
+  "fastapi",
+  "websockets",
+]
+all = [
+  "anthropic",
+  "openai",
+  "playwright",
+  "openpyxl",
+  "reportlab",
+  "scikit-learn",
+  "redis",
+  "pika",
+  "annoy",
+  "faiss-cpu",
+]
+
+[tool.mypy]
+python_version = "3.12"
+warn_unused_ignores = false
+warn_redundant_casts = false
+warn_unused_configs = false
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
+ignore_missing_imports = true
+follow_imports = "skip"
+check_untyped_defs = false
+no_implicit_optional = false
+exclude = [
+    "tests/_archive/",
+    "shopee_agent/skills/",
+    "shopee_agent/cli_commands/",
+    "shopee_agent/cli.py",
+    "shopee_agent/decision_cli.py",
+    "shopee_agent/monitoring_dashboard.py",
+    "build/",
+    "dist/",
+]
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "N", "UP", "B", "SIM"]
+ignore = [
+    "E501",   # line-too-long (legacy code, refactor gradually)
+    "W293",   # blank-line-with-whitespace (cosmetic)
+    "E702",   # multiple-statements-on-one-line (legacy style)
+    "E701",
+    "E402",   # module-import-not-at-top-of-file (lazy imports are intentional)
+    "SIM105", # suppressible-exception (legacy)
+    "SIM102",
+    "SIM108",
+    "B027",
+    "B007",
+    "N806",
+    "N815",
+    "E741",
+    "E722",
+    "UP031",
+    "B904",
+    "F841",
+    "N814",   # camelcase-imported-as-constant (third-party names)
+    "UP042",  # replace-str-enum (legacy)
+    "SIM103", # needless-bool (legacy)
+    "B905",   # zip-without-explicit-strict
+    "N818",   # error-suffix-on-exception-name
+    "B005",   # strip-with-multi-characters
+    "N803",   # invalid-argument-name
+    "SIM115", # open-file-with-context-handler
+    "B018",   # useless-expression
+    "N802",   # invalid-function-name
+    "SIM101", # duplicate-isinstance-call
+    "SIM110", # reimplemented-builtin
+    "SIM118", # in-dict-keys (legacy style)
+    "SIM201", # negate-equal-op (legacy style)
+    "SIM210", # if-expr-with-true-false (legacy style)
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+filterwarnings = ["ignore::pytest.PytestUnhandledThreadExceptionWarning"]
+asyncio_default_fixture_loop_scope = "function"
+addopts = "-x -q --tb=short -n auto"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["shopee_agent*"]

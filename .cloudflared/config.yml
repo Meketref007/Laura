@@ -1,0 +1,7 @@
+tunnel: c4ac1dfb-f15a-496e-a8c2-8dcf20e35145
+credentials-file: C:\Users\victo\.cloudflared\c4ac1dfb-f15a-496e-a8c2-8dcf20e35145.json
+
+ingress:
+  - hostname: webhook.agentelaura.uk
+    service: http://localhost:8766
+  - service: http_status:404

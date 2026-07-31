@@ -1,0 +1,17 @@
+﻿[Unit]
+Description=Laura Shopee Agent Daemon
+After=network.target ollama.service
+
+[Service]
+Type=simple
+User=shopee
+WorkingDirectory=/home/shopee/agente
+EnvironmentFile=/home/shopee/agente/.env
+ExecStart=/home/shopee/agente/.venv/bin/python /home/shopee/agente/laura_daemon.pyw
+Restart=always
+RestartSec=30
+StartLimitIntervalSec=300
+StartLimitBurst=5
+
+[Install]
+WantedBy=multi-user.target

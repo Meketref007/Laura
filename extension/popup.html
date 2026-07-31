@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=400, initial-scale=1">
+  <title>Laura Companion</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div id="app">
+    <header>
+      <h1>🤖 Laura</h1>
+      <span id="badge-status" class="badge">offline</span>
+    </header>
+
+    <section id="health-section">
+      <div class="metric-card">
+        <span class="metric-label">Saúde</span>
+        <span id="health-score" class="metric-value">--</span>
+      </div>
+      <div class="metric-card">
+        <span class="metric-label">Ciclos</span>
+        <span id="cycle-count" class="metric-value">--</span>
+      </div>
+      <div class="metric-card">
+        <span class="metric-label">Erros</span>
+        <span id="error-count" class="metric-value">--</span>
+      </div>
+    </section>
+
+    <section id="skills-section">
+      <h2>Skills</h2>
+      <div id="skills-grid">
+        <div class="metric-card small">
+          <span class="metric-label">Total</span>
+          <span id="skills-total" class="metric-value">--</span>
+        </div>
+        <div class="metric-card small ok">
+          <span class="metric-label">OK</span>
+          <span id="skills-ok" class="metric-value">--</span>
+        </div>
+        <div class="metric-card small fail">
+          <span class="metric-label">Falhas</span>
+          <span id="skills-fail" class="metric-value">--</span>
+        </div>
+      </div>
+    </section>
+
+    <section id="plans-section">
+      <h2>Planos</h2>
+      <div class="progress-bar">
+        <div id="plan-success-bar" class="progress-fill"></div>
+      </div>
+      <span id="plan-ratio" class="detail-text">0/0</span>
+    </section>
+
+    <section id="config-section">
+      <h2>Config</h2>
+      <div class="config-row">
+        <label for="server-url">Servidor Laura:</label>
+        <input type="text" id="server-url" value="http://127.0.0.1:8888" />
+        <button id="save-url">Salvar</button>
+      </div>
+      <div class="config-row">
+        <label>Último ciclo:</label>
+        <span id="last-cycle" class="detail-text">--</span>
+      </div>
+    </section>
+
+    <footer>
+      <a href="http://127.0.0.1:8888" target="_blank">Abrir Dashboard</a>
+      <button id="refresh-btn">Atualizar</button>
+    </footer>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>

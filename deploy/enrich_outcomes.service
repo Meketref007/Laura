@@ -1,0 +1,16 @@
+[Unit]
+Description=Laura Decision Outcomes Enrichment Worker
+After=network.target
+
+[Service]
+Type=simple
+User=shopee
+WorkingDirectory=/home/shopee/agente
+ExecStart=/home/shopee/agente/scripts/run_enrich_outcomes.sh --hours 6
+Restart=on-failure
+RestartSec=60
+StandardOutput=append:/home/shopee/agente/logs/enrich_outcomes.log
+StandardError=append:/home/shopee/agente/logs/enrich_outcomes.err
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,16 @@
+[Unit]
+Description=Laura Daily Store Analysis Timer (LLM-driven insights)
+Requires=laura_analysis.service
+
+[Timer]
+# Run at 04:30 UTC daily (early morning before peak hours)
+OnCalendar=*-*-* 04:30:00
+Persistent=true
+# Small jitter to avoid synchronized starts
+RandomizedDelaySec=5m
+AccuracySec=5s
+
+Unit=laura_analysis.service
+
+[Install]
+WantedBy=timers.target

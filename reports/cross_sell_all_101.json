@@ -1,0 +1,52 @@
+{
+  "orders_loaded": 3,
+  "action": "all",
+  "recommendations": [
+    {
+      "product_id": "102",
+      "co_occurrence_count": 1,
+      "affinity_score": 0.5
+    },
+    {
+      "product_id": "103",
+      "co_occurrence_count": 1,
+      "affinity_score": 0.5
+    }
+  ],
+  "bundle_recommendations": [
+    {
+      "product_id": "101",
+      "bundle_score": 1,
+      "affinity_score": 0.5
+    },
+    {
+      "product_id": "103",
+      "bundle_score": 1,
+      "affinity_score": 0.5
+    }
+  ],
+  "category_recommendations": [],
+  "top_pairs": [
+    {
+      "product_a": "101",
+      "product_b": "102",
+      "co_occurrence_count": 1,
+      "affinity_score": 0.5
+    },
+    {
+      "product_a": "101",
+      "product_b": "103",
+      "co_occurrence_count": 1,
+      "affinity_score": 0.5
+    },
+    {
+      "product_a": "102",
+      "product_b": "103",
+      "co_occurrence_count": 1,
+      "affinity_score": 0.5
+    }
+  ],
+  "graph_stats": {
+    "products_in_graph": 3
+  }
+}

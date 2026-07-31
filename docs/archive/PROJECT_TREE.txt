@@ -1,0 +1,167 @@
+📦 Laura Project - Organized Structure (2026-05-13)
+═══════════════════════════════════════════════════
+
+agente/
+│
+├── 🔐 SECRETS & ENVIRONMENT (gitignored)
+│   ├── .env                          ← Active secrets (never commit)
+│   ├── .env.example                  ← Template
+│   ├── secrets/                      ← API tokens, configs
+│   │   ├── api_token
+│   │   ├── telegram_token
+│   │   └── secrets_rotation_history.jsonl
+│   └── secrets_test/                 ← Test configurations
+│
+├── 📚 DOCUMENTATION (7 files)
+│   ├── README.md                     ← Project overview
+│   ├── PROJECT_STRUCTURE.md          ← Complete architecture [NEW ✨]
+│   ├── CLEANUP_SUMMARY.md            ← Cleanup guide [NEW ✨]
+│   ├── GITHUB_SETUP.md               ← GitHub configuration
+│   ├── RATINGS_BACKFILL_FEATURE.md  ← Feature specs
+│   └── docs/
+│       ├── phases/
+│       │   ├── PHASE_32_SUMMARY.md
+│       │   ├── PHASE_32_CHAT_AUTO.md
+│       │   ├── PHASE_32_IMPLEMENTATION_REPORT.md
+│       │   └── PHASE_33_FLASH_SALES.md
+│       ├── deployment/               ← Deployment guides
+│       ├── operations/               ← Operations docs
+│       ├── planning/                 ← Design docs
+│       ├── audits/                   ← Audit reports
+│       └── artifacts/                ← Technical specs
+│
+├── 🐍 PYTHON PACKAGE (740 KB - clean)
+│   ├── shopee_agent/
+│   │   ├── __init__.py              ← Package init
+│   │   ├── cli.py                   ← Command interface
+│   │   ├── logger.py                ← Logging setup
+│   │   │
+│   │   ├── autonomous_loop.py       ← Core automation [PHASE 32 ✨]
+│   │   ├── chat_auto.py             ← Chat automation [PHASE 32 ✨]
+│   │   ├── flash_sale_recommender.py ← Flash sales [PHASE 33 ✨]
+│   │   │
+│   │   ├── order_*.py               ← Order management
+│   │   ├── profitability_*.py       ← Revenue optimization
+│   │   ├── webhook_*.py             ← Event handling
+│   │   ├── telegram_bot.py          ← Notifications
+│   │   │
+│   │   ├── api/                     ← Shopee API client
+│   │   ├── llm.py / llm_local.py   ← LLM integration (Ollama)
+│   │   ├── rate_limit.py            ← Rate limiting
+│   │   ├── monitoring.py            ← Health checks
+│   │   └── circuit_breaker.py       ← Resilience
+│   │
+│   ├── tests/                       ← Test suite (156 KB - 153 tests ✅)
+│   │   ├── test_chat_auto.py
+│   │   ├── test_flash_sale_recommender.py
+│   │   ├── test_autonomous_loop.py
+│   │   ├── test_*.py               ← 150+ additional tests
+│   │   ├── integration/            ← Integration tests
+│   │   └── conftest.py             ← pytest configuration
+│   │
+│   ├── pyproject.toml              ← Python project config
+│   ├── requirements.txt            ← Dependencies
+│   └── example_phase32_usage.py    ← Usage examples
+│
+├── 🚀 DEPLOYMENT (52 KB)
+│   ├── deploy/
+│   │   ├── laura_analysis.service  ← Analysis service
+│   │   ├── laura_analysis.timer    ← Analysis scheduler
+│   │   ├── laura_reports.service   ← Reports service
+│   │   ├── laura_reports.timer     ← Reports scheduler
+│   │   ├── ollama.service          ← LLM service
+│   │   ├── README_DEPLOY.md        ← Deployment guide
+│   │   ├── README_ANALYSIS_DEPLOYMENT.md
+│   │   ├── README_LLM_TESTING.md
+│   │   └── README_ALERTS_WEBHOOKS.md
+│   │
+│   ├── laura_producao.sh           ← MAIN deployment (10 phases) 🚀
+│   ├── deploy_production.sh        ← Legacy deployment
+│   ├── run_audit.sh                ← Audit runner
+│   └── cleanup_project.sh          ← Cleanup script [NEW ✨]
+│
+├── 📜 SCRIPTS (452 KB - utilities)
+│   ├── scripts/
+│   │   ├── laura_*.sh              ← Feature scripts (40+)
+│   │   ├── telegram_*.sh           ← Telegram utilities
+│   │   ├── test_*.sh               ← Test runners
+│   │   └── run_laura_healthcheck.sh
+│   │
+│   └── tools/
+│       ├── cloudflared            ← Tunnel binary
+│       ├── testing/               ← Test utilities
+│       └── *.deb                  ← Package cache
+│
+├── 📊 RUNTIME DATA (organized)
+│   │
+│   ├── logs/                       ← Execution logs
+│   │   ├── *.log                  ← Current logs (last 3 days) 📍
+│   │   ├── .gitkeep               ← Structure preservation
+│   │   └── archive/               ← Old logs (archived) 📦
+│   │
+│   ├── backups/                    ← Database backups
+│   │   ├── laura_backup_*.tar.gz  ← Recent backups (3) 📍
+│   │   ├── .gitkeep               ← Structure preservation
+│   │   └── archive/               ← Old backups (20) 📦
+│   │
+│   └── reports/                    ← Metrics & snapshots
+│       ├── laura_*.jsonl           ← Event logs
+│       ├── laura_*_latest.json     ← Latest state
+│       ├── laura_*_history.jsonl   ← Historical data
+│       ├── *.state                 ← Guard state files
+│       ├── .gitkeep                ← Structure preservation
+│       ├── webhooks/               ← Webhook logs
+│       └── profitability_ingest_archive/
+│
+├── ⚙️  CONFIGURATION FILES
+│   ├── .gitignore                  ← Git rules [UPDATED ✨]
+│   ├── .gitkeep                    ← Directory preservation
+│   ├── .github/                    ← GitHub workflows
+│   │   └── workflows/              ← CI/CD pipelines
+│   │
+│   └── .venv/                      ← Python virtual env
+│       ├── bin/                    ← Executables
+│       ├── lib/                    ← Dependencies
+│       └── include/                ← Headers
+│
+└── 📁 LEGACY/TEST (8 KB)
+    ├── baselines_test/             ← Test baselines
+    ├── shopee_agent.egg-info/      ← Package metadata
+    └── .pytest_cache/              ← (auto-cleaned)
+
+═══════════════════════════════════════════════════
+
+LEGEND:
+  [NEW ✨]     = Files created during cleanup
+  [UPDATED ✨] = Files improved during cleanup
+  [PHASE 32]   = Chat automation features
+  [PHASE 33]   = Flash sales features
+  📍          = Current/active (keep in git)
+  📦          = Archived/historic (excluded from git)
+  🔐          = Secrets (never commit)
+  ✅          = Tests passing
+  🚀          = Deployment critical
+
+═══════════════════════════════════════════════════
+
+📊 PROJECT SIZE SUMMARY:
+  Total:       207 MB
+  Python:      740 KB
+  Tests:       156 KB
+  Docs:        396 KB
+  Scripts:     452 KB
+  Infrastructure: 52 KB
+  
+  Runtime:     ~60 MB (in archive/ dirs - not in git)
+  Logs/Data:   ~140 MB (gitignored)
+
+✅ CLEANUP COMPLETED:
+  ✓ Python caches removed
+  ✓ Temporary files cleaned
+  ✓ Old backups archived (7.4 MB freed)
+  ✓ Old logs archived (3+ days)
+  ✓ .gitignore enhanced
+  ✓ Documentation created
+  ✓ Structure preserved with .gitkeep
+
+═══════════════════════════════════════════════════

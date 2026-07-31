@@ -1,0 +1,10 @@
+{
+  "generated": "2026-05-01T13:28:11.051275",
+  "metrics": {
+    "api_uptime": "99.8%",
+    "alerts_count": 0,
+    "refunds_count": 0,
+    "health_score": 85,
+    "webhook_success_rate": "99.2%"
+  }
+}

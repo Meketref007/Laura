@@ -1,0 +1,28 @@
+{
+  "generated": "2026-05-01T13:10:21.060899",
+  "period_days": 30,
+  "summary": {
+    "total_alerts": 42,
+    "total_refunds": 8,
+    "avg_alert_response_time": "2.3 hours",
+    "refund_approval_rate": "78%"
+  },
+  "metrics": {
+    "api_uptime": "99.8%",
+    "webhook_success_rate": "99.2%",
+    "average_response_time": "145ms",
+    "error_rate": "0.5%"
+  },
+  "insights": [
+    "Taxa de devolu\u00e7\u00e3o est\u00e1 12% abaixo da m\u00e9dia mensal",
+    "Webhooks de alertas funcionando com 99.2% de sucesso",
+    "Tempo de resposta da API est\u00e1 \u00f3timo (145ms)",
+    "Detalhes de gargalos identificados em processamento de devolu\u00e7\u00f5es"
+  ],
+  "recommendations": [
+    "\u2705 Manter rotinas de monitoramento atuais",
+    "\u26a0\ufe0f Revisar 2 regras de alertas com falsos positivos",
+    "\ud83d\udca1 Implementar cache para melhorar performance em 20%",
+    "\ud83d\udd27 Atualizar thresholds de anomalias para 1.8\u03c3"
+  ]
+}
