@@ -56,6 +56,7 @@ from shopee_agent.seller_center import SellerCenterClient, load_cookies
 from shopee_agent.seller_center import load_cookies as load_seller_cookies
 from shopee_agent.site_scraper import init_content_db, scrape_all_content
 from shopee_agent.vilu_workers import _post, enviar_para_canal
+from shopee_agent.vilu_workers import _post, enviar_para_canal
 from shopee_agent.worker_bots import iniciar_todos_workers, parar_todos_workers
 from shopee_agent.workers import DecisionWorker, MetricWorker, NotificationWorker, OutcomeWorker
 
@@ -785,7 +786,7 @@ class LauraDaemon:
                 alert_list = engine.evaluate(metrics, config)
                 for a in alert_list:
                     from shopee_agent.vilu_workers import enviar_para_canal
-                    enviar_para_canal("sistema", f"🚨 *{a.severity}: {a.title}*\n{a.detail}")
+                    enviar_para_canal("sistema", f"🚨 *{a.severity}: {a.title}*\n{a.message}")
                     print(f"[LauraDaemon] Alert: {a.severity} - {a.title}")
                 self._last_alerts = agora
             except Exception as e:

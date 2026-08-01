@@ -38,18 +38,11 @@ function Start-Daemon {
     $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
     "$timestamp [WATCHDOG] Starting daemon..." | Out-File -FilePath $logFile -Append
 
-    $psi = New-Object System.Diagnostics.ProcessStartInfo
-    $psi.FileName = $python
-    $psi.Arguments = "-u `"$daemonScript`""
-    $psi.WorkingDirectory = $rootDir
-    $psi.RedirectStandardOutput = $true
-    $psi.RedirectStandardError = $true
-    $psi.UseShellExecute = $false
-    $psi.CreateNoWindow = $true
-    $psi.EnvironmentVariables["PYTHONUNBUFFERED"] = "1"
+    $outLog = "$rootDir\logs\laura_daemon.out.log"
+    $errLog = "$rootDir\logs\laura_daemon.err.log"
 
     try {
-        $proc = [System.Diagnostics.Process]::Start($psi)
+        $proc = Start-Process -FilePath $python -ArgumentList "-u", "`"$daemonScript`"" -WorkingDirectory $rootDir -WindowStyle Hidden -RedirectStandardOutput $outLog -RedirectStandardError $errLog -PassThru
         $proc.Id | Out-File -FilePath $daemonPidFile -Force
         "$timestamp [WATCHDOG] Daemon started with PID $($proc.Id)" | Out-File -FilePath $logFile -Append
         Write-Host "[WATCHDOG] Daemon started (PID: $($proc.Id))" -ForegroundColor Green

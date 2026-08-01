@@ -57,12 +57,37 @@ reports/*.jsonl
 reports/*.state
 reports/*_history.json
 reports/*_latest.json
+reports/*_state.json
+reports/*_cache.json
+reports/*_status.json
+reports/*_auth.json
+reports/*_curve.json
+reports/*_graph.json
+reports/*_recommend_*.json
+reports/*_all_*.json
+reports/*_bundle_*.json
+reports/*_callback_latest.txt
+reports/*_tunnel_latest.txt
+reports/*_summary.pdf
+reports/*_summary.xlsx
+reports/*_audit.json
+reports/*_audit_v2.json
+reports/*_predictions.json
+reports/*_learning.json
+reports/*_last_notified.json
+reports/store_analysis_*.json
+reports/store_health_*.json
+reports/telegram_chats.json
 reports/webhooks/
 reports/profitability_ingest_archive/
 reports/api_cache/
 reports/approvals/
 reports/weekly_pdfs/
 reports/laura_incident_*/
+reports/laura_incident_*.tar.gz
+reports/report_performance_*.csv
+reports/report_performance_*.json
+reports/sales_report_*.json
 reports/*.db
 
 # SQLite databases (runtime)

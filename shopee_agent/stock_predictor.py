@@ -34,8 +34,8 @@ def predict_restock(
                     }
 
         # Obter estoque atual
-        products = seller_client.get_item_list(limit=200)
-        for p in products.get("item_list", products.get("items", [])):
+        products = seller_client.get_products(limit=200)
+        for p in products:
             iid = str(p.get("item_id", ""))
             stock = p.get("stock", 0)
             name = p.get("item_name", p.get("name", "?"))
