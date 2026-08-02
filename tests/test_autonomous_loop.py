@@ -157,3 +157,52 @@ def test_autonomous_loop_sends_formatted_telegram_message(tmp_path: Path, monkey
     assert "📦" in message  # Emoji de pacote
     assert "260508SUGRJ4V2" in message  # Order SN
     assert ("Camiseta Premium" in message or "joao_silva" in message)  # Dados enriquecidos
+
+
+def test_autonomous_loop_wires_agent_orchestrator(tmp_path: Path, monkeypatch) -> None:
+    """O loop deve instanciar o AgentOrchestrator e passá-lo ao DecisionIntegrator."""
+    client = _FakeClientBasic()
+    loop = AutonomousLoop(
+        client=client,
+        access_token="access-token",
+        shop_id=1288767930,
+        reports_dir=tmp_path / "reports",
+    )
+
+    assert loop._agent_orchestrator is not None
+
+    engine = __import__("shopee_agent.decision_engine", fromlist=["DecisionEngine"]).DecisionEngine(
+        store_id="test", rules=__import__("shopee_agent.decision_engine", fromlist=["create_default_rules"]).create_default_rules()
+    )
+    integrator = __import__("shopee_agent.decision_integration", fromlist=["DecisionIntegrator"]).DecisionIntegrator(
+        engine=engine,
+        store_id="test",
+        metrics_dir=str(tmp_path / "reports"),
+        agent_orchestrator=loop._agent_orchestrator,
+    )
+
+    monkeypatch.setattr(integrator, "collect_signals_from_metrics", lambda: [])
+    monkeypatch.setattr(
+        integrator,
+        "build_economic_context",
+        lambda: __import__("shopee_agent.decision_engine", fromlist=["EconomicContext"]).EconomicContext(
+            current_margin_pct=16.0,
+            margin_target_pct=20.0,
+            daily_revenue_usd=4000.0,
+            cash_buffer_usd=10000.0,
+            inventory_days_on_hand=5,
+            stock_risk_level="high",
+            active_promotions=0,
+            advertising_spend_daily_usd=500.0,
+            advertising_roas=1.2,
+            customer_satisfaction_score=70.0,
+            recent_anomalies=[],
+        ),
+    )
+
+    result = integrator.process_cycle()
+
+    assert result["orchestration"] is not None
+    plan = result["orchestration"]
+    assert "approved_actions" in plan
+    assert "consensus_score" in plan

@@ -26,6 +26,8 @@ if (-not (Test-Path $logDir)) { New-Item -ItemType Directory -Path $logDir -Forc
 
 $stamp = Get-Date -Format "yyyy-MM-dd_HHmmss"
 $dest = Join-Path $codeDir "backups\daily\$stamp"
+# cria o destino ANTES: sem isso, o Copy-Item achata o conteudo (ex.: reports) na raiz do backup
+New-Item -ItemType Directory -Path $dest -Force | Out-Null
 
 $items = @("reports", "data", "secrets", "logs")
 foreach ($item in $items) {

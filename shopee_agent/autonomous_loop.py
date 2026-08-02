@@ -38,6 +38,16 @@ except ImportError:
     StrategicPlanner = None
 
 try:
+    from shopee_agent.agent_orchestrator import AgentOrchestrator
+except ImportError:
+    AgentOrchestrator = None
+
+try:
+    from shopee_agent.branding_growth import BrandingGrowthAnalyzer
+except ImportError:
+    BrandingGrowthAnalyzer = None
+
+try:
     from shopee_agent.learning_system import LearningSystem
 except ImportError:
     LearningSystem = None
@@ -87,6 +97,16 @@ class AutonomousLoop:
         self._strategic_planner = (
             StrategicPlanner()
             if StrategicPlanner is not None
+            else None
+        )
+        self._agent_orchestrator = (
+            AgentOrchestrator()
+            if AgentOrchestrator is not None
+            else None
+        )
+        self._branding_growth = (
+            BrandingGrowthAnalyzer(catalog_path=str(self.reports_dir / "product_catalog.jsonl"))
+            if BrandingGrowthAnalyzer is not None
             else None
         )
         self._learning_system = (
@@ -393,11 +413,56 @@ class AutonomousLoop:
                 predictive_analytics=self._predictive_analytics,
                 competitive_intelligence=self._competitive_intelligence,
                 strategic_planner=self._strategic_planner,
+                agent_orchestrator=self._agent_orchestrator,
+                branding_growth=self._branding_growth,
             )
 
         cycle_result = integrator.process_cycle()
 
         decisions_list = list(engine.pending_decisions.values())
+        executor = DecisionExecutor(store_id=str(self.shop_id or "default"), engine=engine, client=self.client)
+
+        # Orquestracao multi-agente: converter acoes aprovadas em decisoes executaveis
+        orchestration_executed: list[str] = []
+        if self.ceo_mode and self._agent_orchestrator is not None:
+            from shopee_agent.decision_engine import DecisionType
+
+            type_map = {
+                "price_adjustment": DecisionType.PRICING,
+                "price_match": DecisionType.PRICING,
+                "ad_spend_adjustment": DecisionType.ADS,
+                "inventory_replenishment": DecisionType.INVENTORY,
+                "cost_containment": DecisionType.ALERTS,
+                "reserve_optimization": DecisionType.ALERTS,
+                "growth_investment": DecisionType.ADS,
+            }
+            plan = getattr(integrator, "last_orchestration_plan", None)
+            if plan is not None:
+                for action in plan.approved_actions:
+                    try:
+                        dtype = type_map.get(action.action_type)
+                        if dtype is None:
+                            continue
+                        decision = __import__("shopee_agent.decision_engine", fromlist=["Decision"]).Decision(
+                            decision_id=f"orchestr_{action.action_id}",
+                            title=f"[Orchestrator] {action.agent_name}: {action.action_type}",
+                            decision_type=dtype,
+                            recommended_action=action.rationale,
+                            priority=DecisionPriority.MEDIUM,
+                            status=DecisionStatus.APPROVED,
+                            metadata={
+                                "source": "agent_orchestrator",
+                                "agent": action.agent_name,
+                                "action_type": action.action_type,
+                                "direction": action.direction,
+                                "magnitude": action.magnitude,
+                            },
+                        )
+                        success = executor.execute(decision)
+                        if success:
+                            orchestration_executed.append(decision.decision_id)
+                    except Exception:
+                        continue
 
         # Modo CEO: auto-aprova decisoes pendentes seguras (risco baixo, confianca alta)
         if self.ceo_mode:
@@ -437,7 +502,6 @@ class AutonomousLoop:
             except Exception:
                 continue
 
-        executor = DecisionExecutor(store_id=str(self.shop_id or "default"), engine=engine, client=self.client)
         executed = []
         for d in decisions_list:
             try:
@@ -596,6 +660,7 @@ class AutonomousLoop:
             "decision_cycle_summary": cycle_result,
             "pending_decisions_count": len(decisions_list),
             "executed_decisions": executed,
+            "orchestration_executed": orchestration_executed,
             "learning_cycle": learning_result,
             "flash_sale_scan": flash_sale_result,
         }

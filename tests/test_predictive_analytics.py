@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import statistics
 
 from shopee_agent.decision_engine import EconomicContext
 from shopee_agent.decision_integration import DecisionIntegrator
@@ -73,6 +74,44 @@ class TestPredictiveAnalytics:
 
         assert summary["high_risk_metrics"]
         assert summary["recommendations"]
+
+    def test_seasonal_detection_weekly(self):
+        """Serie com fim de semana forte deve detectar periodo 7 (semanal)."""
+        values: list[float] = []
+        for _week in range(6):
+            for dow in range(7):
+                values.append(50.0 if dow in (5, 6) else 30.0)
+        assert PredictiveAnalytics._seasonal_period(values) == 7
+
+    def test_seasonal_factors_reflect_pattern(self):
+        values: list[float] = []
+        for _week in range(6):
+            for dow in range(7):
+                values.append(50.0 if dow in (5, 6) else 30.0)
+        _forecast, factors = PredictiveAnalytics._seasonal_static(values, horizon=1)
+        weekend_avg = (factors[5] + factors[6]) / 2
+        weekday_avg = statistics.mean([factors[i] for i in range(5)])
+        assert weekend_avg > weekday_avg
+
+    def test_holt_outperforms_linear_on_uptrend_holdout(self):
+        """Com tendencia clara, o holdout do Holt deve ser melhor que o linear."""
+        values = [float(10 + i * 1.5 + (i % 3)) for i in range(30)]
+        rmse_holt = PredictiveAnalytics._holdout_rmse(values, "holt")
+        rmse_linear = PredictiveAnalytics._holdout_rmse(values, "linear_trend")
+        assert rmse_holt <= rmse_linear
+
+    def test_forecast_reports_method(self, tmp_path):
+        """O ForecastResult deve reportar qual metodo foi usado."""
+        history = tmp_path / "laura_profitability_history.jsonl"
+        values = [float(10 + i * 1.5) for i in range(30)]
+        write_profit_history(history, [(v, 16.0, 2.0) for v in values])
+
+        analytics = PredictiveAnalytics(reports_dir=str(tmp_path))
+        result = analytics.forecast_revenue(horizon_days=7)
+
+        assert result is not None
+        assert result.details.get("method") in {"linear_trend", "holt_linear", "holt_seasonal"}
+        assert result.forecast_value > 0
 
 
 class TestPredictiveIntegration:

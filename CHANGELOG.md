@@ -4,6 +4,34 @@ Todas as mudanças relevantes do projeto são documentadas aqui.
 
 O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e o projeto adota [SemVer](https://semver.org/lang/pt-BR/).
 
+## [3.3.0] - 2026-08-02
+
+### Adicionado
+- **Restauração de backup** (`scripts/laura-restore.ps1`) — restaura o backup diário
+  mais recente (ou um específico com `-From`), reinicia os serviços e valida a saúde
+  do webhook. Botão "Restaurar" no painel.
+- **Forecasting avançado** no `predictive_analytics.py` — suavização exponencial de
+  Holt e detecção de sazonalidade (fins de semana, etc.); o melhor método é escolhido
+  automaticamente pelo menor erro (holdout RMSE) e reportado em `details.method`.
+- **Orquestração multi-agente no ciclo principal** — `AgentOrchestrator` agora é
+  instanciado pelo `AutonomousLoop` e passa a alimentar o `DecisionIntegrator`;
+  em CEO mode, ações aprovadas do plano (preço/anúncios/estoque) viram decisões
+  executáveis (campo `orchestration_executed` no log).
+- **Branding & Growth no ciclo** (Fase 42) — `BrandingGrowthAnalyzer` integrado ao
+  loop; snapshot aparece no log (`branding_growth`). Docs: `docs/PHASE_37_41.md`
+  agora cobre até a fase 42.
+- **Job `install-e2e` no CI** — instalação real em runner Windows limpo: venv,
+  dependências, `.env`, cloudflared, serviços no ar e health check do webhook.
+  Passou a ser pré-requisito da release.
+- **Painel**: botão "Restaurar" e link "Config (.env)" (abre o `.env` para edição).
+
+### Corrigido
+- **Bug estrutural do backup**: `Copy-Item` sem destino pré-criado achata a pasta
+  `reports/` na raiz do stamp; backup agora preserva `reports/ data/ secrets/ logs/`.
+- **Fator sazonal do forecast**: a previsão sazonal dividia pela média errada,
+  inflando os fatores; agora usa a média global da série.
+- Painel: import de `urllib` faltando (botão "Nova versão?" quebrava).
+
 ## [3.2.0] - 2026-08-02
 
 ### Adicionado

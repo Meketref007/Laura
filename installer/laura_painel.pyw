@@ -8,15 +8,15 @@ import queue
 import subprocess
 import sys
 import threading
+import tkinter as tk
+import urllib.request
 import webbrowser
 from pathlib import Path
-
-import tkinter as tk
-from tkinter import ttk, messagebox
+from tkinter import messagebox
 
 from laura_common import (
-    EMPTY,
     DOT,
+    EMPTY,
     git_short_sha,
     health_check,
     parse_status,
@@ -101,14 +101,16 @@ class Painel(tk.Tk):
             ("restart", "Reiniciar", self.action_restart),
             ("update", "Atualizar", self.action_update),
             ("backup", "Backup", self.action_backup),
+            ("restore", "Restaurar", self.action_restore),
         ]):
             b = tk.Button(actions, text=label, font=("Segoe UI", 10, "bold"), width=13,
                           command=cmd, bg="#ffffff", activebackground="#e8edf5", relief="solid", bd=1)
             b.grid(row=0, column=col, padx=(0, 8))
             self.buttons[key] = b
         links = tk.Frame(actions, bg="#f4f6f9")
-        links.grid(row=0, column=5, sticky="e", padx=(10, 0))
+        links.grid(row=0, column=6, sticky="e", padx=(10, 0))
         for text, cmd in [("Dashboard", lambda: webbrowser.open("http://127.0.0.1:8766/")),
+                          ("Config (.env)", self.open_env),
                           ("Nova versão?", self.check_new_setup_version),
                           ("Logs", self.open_logs),
                           ("Pasta", self.open_folder)]:
@@ -226,6 +228,29 @@ class Painel(tk.Tk):
 
         self.set_busy(True, "fazendo backup...")
         threading.Thread(target=worker, daemon=True).start()
+
+    def action_restore(self):
+        def worker():
+            try:
+                res = self.run_ps("laura-restore.ps1")
+                self.queue.put(("done", "restore", (res.stdout or res.stderr or "").strip()))
+            except Exception as exc:
+                self.queue.put(("done", "restore", f"erro: {exc}"))
+
+        self.set_busy(True, "restaurando backup...")
+        threading.Thread(target=worker, daemon=True).start()
+
+    def open_env(self):
+        env_file = self.code_dir / ".env"
+        if not env_file.exists():
+            env_example = self.code_dir / ".env.example"
+            messagebox.showerror(
+                "Config (.env)",
+                f".env nao encontrado em:\n{env_file}\n\n"
+                "Rode o instalador para cria-lo a partir do .env.example.",
+            )
+            return
+        os.startfile(str(env_file))  # noqa: S606
 
     @staticmethod
     def _ver_gt(a: str, b: str) -> bool:

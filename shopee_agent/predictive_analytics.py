@@ -170,8 +170,31 @@ class PredictiveAnalytics:
                 details={"horizon_days": horizon_days},
             ) if series else None
 
+        # escolhe o metodo com melhor holdout (RMSE) entre linear e Holt+sazonal
+        method = "linear_trend"
         trend = self._linear_trend(series)
         forecast_value = max(0.0, series[-1] + trend * horizon_days)
+
+        if len(series) >= 6:
+            holt = self._holt_linear(series, horizon_days)
+            seasonal, season_factors = self._seasonal_adjust(series, horizon_days)
+            rmse_linear = self._holdout_rmse(series, method="linear_trend")
+            rmse_holt = self._holdout_rmse(series, method="holt")
+            rmse_seasonal = self._holdout_rmse(series, method="seasonal") if season_factors else float("inf")
+
+            best = min(
+                (rmse_linear, "linear_trend"),
+                (rmse_holt, "holt_linear"),
+                (rmse_seasonal, "holt_seasonal"),
+                key=lambda pair: pair[0],
+            )
+            method = best[1]
+            if method == "holt_linear":
+                forecast_value = max(0.0, holt)
+            elif method == "holt_seasonal":
+                forecast_value = max(0.0, seasonal)
+                trend = self._holt_trend(series)
+
         current_value = series[-1]
         confidence = self._confidence(len(series), trend)
         direction = self._direction(trend)
@@ -191,6 +214,7 @@ class PredictiveAnalytics:
             samples=len(series),
             details={
                 "horizon_days": horizon_days,
+                "method": method,
                 "min": min(series),
                 "max": max(series),
                 "mean": round(statistics.mean(series), 4),
@@ -253,6 +277,133 @@ class PredictiveAnalytics:
         if denominator == 0:
             return 0.0
         return numerator / denominator
+
+    def _holt_linear(self, values: list[float], horizon_days: int, alpha: float = 0.4, beta: float = 0.2) -> float:
+        """Suavizacao exponencial dupla (Holt): nivel + tendencia, extrapola o horizonte."""
+        if len(values) < 2:
+            return values[-1] if values else 0.0
+        level = values[0]
+        trend = values[1] - values[0] if len(values) > 1 else 0.0
+        for i in range(1, len(values)):
+            last_level = level
+            level = alpha * values[i] + (1 - alpha) * (level + trend)
+            trend = beta * (level - last_level) + (1 - beta) * trend
+        return level + trend * horizon_days
+
+    def _holt_trend(self, values: list[float], alpha: float = 0.4, beta: float = 0.2) -> float:
+        """Tendencia suavizada de Holt (para reportar trend_per_day)."""
+        if len(values) < 2:
+            return 0.0
+        level = values[0]
+        trend = values[1] - values[0]
+        for i in range(1, len(values)):
+            last_level = level
+            level = alpha * values[i] + (1 - alpha) * (level + trend)
+            trend = beta * (level - last_level) + (1 - beta) * trend
+        return trend
+
+    @staticmethod
+    def _seasonal_period(values: list[float]) -> int:
+        """Detecta o periodo sazonal mais provavel (7 = semanal, 30 = mensal, 0 = sem padrao)."""
+        n = len(values)
+        if n < 14:
+            return 0
+        for period in (7, 30):
+            if n < period * 2:
+                continue
+            mean_full = statistics.mean(values)
+            sse_within = 0.0
+            sse_overall = sum((v - mean_full) ** 2 for v in values)
+            for offset in range(period):
+                bucket = values[offset::period]
+                if not bucket:
+                    continue
+                bucket_mean = statistics.mean(bucket)
+                sse_within += sum((v - bucket_mean) ** 2 for v in bucket)
+            if sse_overall > 0 and sse_within / sse_overall < 0.85:
+                return period
+        return 0
+
+    def _seasonal_adjust(self, values: list[float], horizon_days: int) -> tuple[float, dict[int, float]]:
+        """Previsao Holt + fator sazonal (proximo periodo). Retorna (previsao, fatores)."""
+        period = self._seasonal_period(values)
+        factors: dict[int, float] = {}
+        if period == 0 or len(values) < period * 2:
+            return self._holt_linear(values, horizon_days), factors
+
+        global_mean = statistics.mean(values)
+        for offset in range(period):
+            bucket = values[offset::period]
+            if bucket:
+                factors[offset] = statistics.mean(bucket) / max(1e-9, global_mean)
+
+        last_index = len(values) - 1
+        next_offsets = [(last_index + i + 1) % period for i in range(horizon_days)]
+        seasonal_target = sum(factors.get(offset, 1.0) for offset in next_offsets)
+        return self._holt_linear(values, horizon_days) * seasonal_target / max(1e-9, horizon_days), factors
+
+    @staticmethod
+    def _holdout_rmse(values: list[float], method: str, holdout: int = 5) -> float:
+        """Treina nos primeiros len-holdout pontos e mede o RMSE nos ultimos `holdout`."""
+        if len(values) < holdout + 3:
+            return float("inf")
+        train = values[:-holdout]
+        actual = values[-holdout:]
+        errors = 0.0
+        for step, y_true in enumerate(actual, start=1):
+            if method == "linear_trend":
+                trend = PredictiveAnalytics._linear_trend_static(train)
+                y_pred = max(0.0, train[-1] + trend * step)
+            elif method == "holt":
+                y_pred = max(0.0, PredictiveAnalytics._holt_static(train, step))
+            elif method == "seasonal":
+                y_pred, _ = PredictiveAnalytics._seasonal_static(train, step)
+            else:
+                y_pred = train[-1]
+            errors += (y_true - y_pred) ** 2
+        return (errors / holdout) ** 0.5
+
+    @staticmethod
+    def _linear_trend_static(values: list[float]) -> float:
+        n = len(values)
+        if n < 2:
+            return 0.0
+        x_mean = (n - 1) / 2
+        y_mean = statistics.mean(values)
+        numerator = sum((i - x_mean) * (values[i] - y_mean) for i in range(n))
+        denominator = sum((i - x_mean) ** 2 for i in range(n))
+        return numerator / denominator if denominator else 0.0
+
+    @staticmethod
+    def _holt_static(values: list[float], horizon: int) -> float:
+        if len(values) < 2:
+            return values[-1] if values else 0.0
+        level = values[0]
+        trend = values[1] - values[0]
+        for i in range(1, len(values)):
+            last_level = level
+            level = 0.4 * values[i] + 0.6 * (level + trend)
+            trend = 0.2 * (level - last_level) + 0.8 * trend
+        return level + trend * horizon
+
+    @staticmethod
+    def _seasonal_static(values: list[float], horizon: int) -> tuple[float, dict[int, float]]:
+        period = PredictiveAnalytics._seasonal_period(values)
+        factors: dict[int, float] = {}
+        if period == 0 or len(values) < period * 2:
+            return PredictiveAnalytics._holt_static(values, horizon), factors
+        global_mean = statistics.mean(values)
+        for offset in range(period):
+            bucket = values[offset::period]
+            if bucket:
+                factors[offset] = statistics.mean(bucket) / max(1e-9, global_mean)
+        last_index = len(values) - 1
+        next_offsets = [(last_index + i + 1) % period for i in range(horizon)]
+        seasonal_target = sum(factors.get(offset, 1.0) for offset in next_offsets)
+        return (
+            PredictiveAnalytics._holt_static(values, horizon) * seasonal_target / max(1e-9, horizon),
+            factors,
+        )
 
     def _confidence(self, sample_count: int, trend: float) -> float:
         base = min(0.9, sample_count / 20.0)

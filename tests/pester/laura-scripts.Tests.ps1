@@ -10,6 +10,7 @@ $scripts = @(
     "scripts\laura-services.ps1",
     "scripts\laura-update.ps1",
     "scripts\laura-backup.ps1",
+    "scripts\laura-restore.ps1",
     "scripts\laura-extra-setup.ps1",
     "scripts\laura_watchdog.ps1",
     "installer\install.ps1",
@@ -88,5 +89,32 @@ Describe "laura-update.ps1" {
         $content = Get-Content (Join-Path $script:repoRoot "scripts\laura-update.ps1") -Raw
         $content | Should -Match "laura-update.lock"
         $content | Should -Match "pull --ff-only"
+    }
+}
+
+Describe "laura-backup.ps1" {
+    It "faz backup de reports, data, secrets e logs com rotacao" {
+        $content = Get-Content (Join-Path $script:repoRoot "scripts\laura-backup.ps1") -Raw
+        foreach ($item in @("reports", "data", "secrets", "logs")) {
+            $content | Should -Match $item -Because "backup de $item"
+        }
+        $content | Should -Match "KeepDays"
+        $content | Should -Match "backups\\daily"
+    }
+}
+
+Describe "laura-restore.ps1" {
+    It "restaura do backup mais recente e reinicia servicos" {
+        $content = Get-Content (Join-Path $script:repoRoot "scripts\laura-restore.ps1") -Raw
+        foreach ($item in @("reports", "data", "secrets", "logs")) {
+            $content | Should -Match $item -Because "restore de $item"
+        }
+        $content | Should -Match "backups\\daily"
+        $content | Should -Match "laura-services.ps1"
+    }
+    It "aceita -From (backup especifico) e -NoStop" {
+        $content = Get-Content (Join-Path $script:repoRoot "scripts\laura-restore.ps1") -Raw
+        $content | Should -Match "From"
+        $content | Should -Match "NoStop"
     }
 }

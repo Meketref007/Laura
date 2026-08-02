@@ -1,4 +1,4 @@
-# Fases 37–41: Multi-Agente, Estratégia, Analytics, Inteligência Competitiva e Supply Chain
+# Fases 37–42: Multi-Agente, Estratégia, Analytics, Inteligência Competitiva, Supply Chain e Branding
 
 **Status**: Implementado ✅ (docs do roadmap `LAURA_ROADMAP.md` — "AI COO → AI CEO")
 
@@ -135,13 +135,39 @@ balanceamento multi-warehouse.
 
 ---
 
+## Fase 42 — Branding & Growth
+
+**Módulo**: `shopee_agent/branding_growth.py`
+**Testes**: `tests/test_branding_growth.py`
+**CLI**: `laura branding-growth-summary`
+
+Analisa os listings do catálogo (`reports/product_catalog.jsonl`) e pontua cada
+item por qualidade de anúncio (título, descrição, imagens, sinais de demanda),
+gerando recomendações de SEO, cross-sell e upsell.
+
+### Componentes
+
+- `CatalogItem` — item do catálogo com preço, vendas semanais, crescimento e imagens.
+- `ListingInsight` — score 0–100 por listing com sinais e recomendações.
+- `BrandingGrowthSnapshot` — visão consolidada: média, top items, itens fracos e recomendações.
+- `BrandingGrowthAnalyzer` — carrega o catálogo, pontua e gera o snapshot.
+
+### Integração
+
+- `AutonomousLoop` instancia `BrandingGrowthAnalyzer(catalog_path=...)` no boot e passa ao `DecisionIntegrator` (resultado aparece em `laura_autonomous_log.jsonl` → `branding_growth`).
+- `AutonomousStrategyLayer` (fase "CEO") consome o snapshot no `StrategySignal` (`branding_opportunity`).
+- `laura branding-growth-summary` imprime o resumo em JSON.
+
+---
+
 ## Como validar
 
 ```bash
-# Testes das fases 37-41
+# Testes das fases 37-42
 python -m pytest tests/test_agent_orchestrator.py tests/test_strategic_planner.py \
   tests/test_predictive_analytics.py tests/test_competitive_intelligence.py \
-  tests/test_supply_chain_planner_v2.py tests/test_economic_brain.py -q
+  tests/test_supply_chain_planner_v2.py tests/test_economic_brain.py \
+  tests/test_branding_growth.py -q
 
 # CLI
 laura agent-orchestration
@@ -149,6 +175,7 @@ laura strategic-plan --goal "Crescer margem para 20%"
 laura economic-brain-summary
 laura competitive-intel-summary
 laura supply-chain
+laura branding-growth-summary
 ```
 
 Todas as fases rodam localmente com custo zero (LLM via Ollama) e são
