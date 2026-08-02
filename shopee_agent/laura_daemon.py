@@ -56,7 +56,6 @@ from shopee_agent.seller_center import SellerCenterClient, load_cookies
 from shopee_agent.seller_center import load_cookies as load_seller_cookies
 from shopee_agent.site_scraper import init_content_db, scrape_all_content
 from shopee_agent.vilu_workers import _post, enviar_para_canal
-from shopee_agent.vilu_workers import _post, enviar_para_canal
 from shopee_agent.worker_bots import iniciar_todos_workers, parar_todos_workers
 from shopee_agent.workers import DecisionWorker, MetricWorker, NotificationWorker, OutcomeWorker
 
