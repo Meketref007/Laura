@@ -110,6 +110,12 @@ function Start-Daemon {
     }
 
     try {
+        $existing = Find-RunningDaemon
+        if ($existing) {
+            Write-Log "[WATCHDOG] Daemon ja em execucao (PID $($existing.ProcessId)). Adotando..."
+            $existing.ProcessId | Out-File -FilePath $daemonPidFile -Force
+            return [int]$existing.ProcessId
+        }
         Write-Log "[WATCHDOG] Starting daemon with $python..."
         if ($usePythonw) {
             # pythonw nao tem stdout: sem redirects, loga nos proprios arquivos
@@ -119,7 +125,7 @@ function Start-Daemon {
         }
         $proc.Id | Out-File -FilePath $daemonPidFile -Force
         Write-Log "[WATCHDOG] Daemon started with PID $($proc.Id)"
-        return $proc
+        return [int]$proc.Id
     } catch {
         Write-Log "[WATCHDOG] Failed to start daemon: $_"
         Write-Host "[WATCHDOG] Failed: $_" -ForegroundColor Red
@@ -127,17 +133,30 @@ function Start-Daemon {
     }
 }
 
-# Initial start
-$daemonProc = Start-Daemon
+function Find-RunningDaemon {
+    Get-CimInstance Win32_Process -Filter "Name like 'python%'" -ErrorAction SilentlyContinue |
+        Where-Object {
+            $_.CommandLine -match "laura_daemon|shopee_agent\.cli daemon" -and
+            $_.CommandLine -match [regex]::Escape($rootDir)
+        } |
+        Select-Object -First 1
+}
+
+function Is-Alive($procId) {
+    if (-not $procId) { return $false }
+    return ($null -ne (Get-Process -Id $procId -ErrorAction SilentlyContinue))
+}
+
+# Initial start (adota daemon existente, se houver; evita daemons duplicados)
+$daemonPid = Start-Daemon
 
 while ($true) {
     Start-Sleep -Seconds $CheckInterval
 
-    if ($daemonProc -eq $null -or $daemonProc.HasExited) {
-        $exitCode = if ($daemonProc) { $daemonProc.ExitCode } else { "N/A" }
-        Write-Log "[WATCHDOG] Daemon exited (code: $exitCode). Restarting..."
-        Write-Host "[WATCHDOG] Daemon died (code: $exitCode). Restarting..." -ForegroundColor Yellow
-        $daemonProc = Start-Daemon
+    if (-not (Is-Alive $daemonPid)) {
+        Write-Log "[WATCHDOG] Daemon morto (PID $daemonPid). Reiniciando..."
+        Write-Host "[WATCHDOG] Daemon died (PID $daemonPid). Restarting..." -ForegroundColor Yellow
+        $daemonPid = Start-Daemon
     }
 
     # Also check daemon health endpoint
@@ -149,8 +168,8 @@ while ($true) {
         $r = Invoke-WebRequest -UseBasicParsing -Uri "http://127.0.0.1:$webhookPort/health" -TimeoutSec 5 -ErrorAction SilentlyContinue
         if ($r.StatusCode -ne 200) {
             Write-Log "[WATCHDOG] Health check failed (HTTP $($r.StatusCode)). Restarting daemon..."
-            if ($daemonProc -and -not $daemonProc.HasExited) { $daemonProc.Kill() }
-            $daemonProc = Start-Daemon
+            if (Is-Alive $daemonPid) { Stop-Process -Id $daemonPid -Force -ErrorAction SilentlyContinue }
+            $daemonPid = Start-Daemon
         }
     } catch {
         # Webhook server might not be up yet - that's OK
