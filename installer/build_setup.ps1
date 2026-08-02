@@ -6,7 +6,13 @@ $ErrorActionPreference = "Stop"
 $issDir = $PSScriptRoot
 Set-Location $issDir
 
-Write-Host "=== Build do Setup da Laura ===" -ForegroundColor Green
+# ---------- 0. Versao (fonte unica: pyproject.toml) ----------
+$pyproject = Join-Path (Split-Path $issDir -Parent) "pyproject.toml"
+$version = (Select-String -Path $pyproject -Pattern '^version\s*=\s*"([^"]+)"').Matches.Groups[1].Value
+if (-not $version) { Write-Host "ERRO: versao nao encontrada em pyproject.toml" -ForegroundColor Red; exit 1 }
+Write-Host "Versao: $version"
+
+Write-Host "=== Build do Setup da Laura ($version) ===" -ForegroundColor Green
 
 # ---------- 1. Icone (PIL - usa o venv da Laura instalada ou qualquer python com pillow) ----------
 $venvPy = Join-Path $env:LOCALAPPDATA "Laura\code\.venv\Scripts\python.exe"
@@ -85,8 +91,8 @@ Write-Host "OK: Inno Setup em $isccPath"
 
 # ---------- 3. Compilar ----------
 New-Item -ItemType Directory -Path $OutDir -Force | Out-Null
-Write-Host "Compilando Setup.exe..."
-& $isccPath "laura_setup.iss"
+Write-Host "Compilando Setup.exe (versao $version)..."
+& $isccPath "/DAppVersion=$version" "laura_setup.iss"
 if ($LASTEXITCODE -ne 0) { Write-Host "ERRO: ISCC falhou (codigo $LASTEXITCODE)" -ForegroundColor Red; exit 1 }
 
 $setup = Get-ChildItem $OutDir -Filter "Laura-Setup-*.exe" | Sort-Object LastWriteTime -Descending | Select-Object -First 1

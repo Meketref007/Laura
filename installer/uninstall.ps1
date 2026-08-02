@@ -23,7 +23,8 @@ Start-Sleep -Seconds 2
 
 # 2. Remove tarefas agendadas
 schtasks /Delete /TN "Laura Update" /F 2>$null | Out-Null
-Write-Host "Tarefa 'Laura Update' removida."
+schtasks /Delete /TN "Laura Backup" /F 2>$null | Out-Null
+Write-Host "Tarefas 'Laura Update' e 'Laura Backup' removidas."
 
 # 3. Atalhos
 $wsh = New-Object -ComObject WScript.Shell

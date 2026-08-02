@@ -4,6 +4,7 @@ param(
     [switch]$InstallPlaywright,
     [switch]$Force,
     [switch]$SkipClone,
+    [switch]$InstallModels,
     [switch]$NoSchedule,
     [switch]$NoShortcut,
     [switch]$NoMigrate
@@ -172,7 +173,40 @@ if (-not $NoMigrate) {
     }
 }
 
-# ---------- 4. .env ----------
+# ---------- 4. Extras: cloudflared + modelos Ollama ----------
+# cloudflared (tunel do webhook) - download oficial se nao existir
+$cloudflared = Join-Path $codeDir "tools\cloudflared.exe"
+if (-not (Test-Path $cloudflared)) {
+    Say "Baixando cloudflared (tunel do webhook)..."
+    try {
+        Invoke-WebRequest -UseBasicParsing -Uri "https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-windows-amd64.exe" -OutFile $cloudflared -TimeoutSec 120
+        Say "OK: cloudflared instalado"
+    } catch {
+        Say "WARN: nao consegui baixar o cloudflared ($_). O daemon baixa de novo se precisar." -color Yellow
+    }
+}
+
+# modelos Ollama (LLM local) - opt-in, custo zero
+if ($InstallModels) {
+    $ollamaBin = Get-Command ollama -ErrorAction SilentlyContinue
+    if (-not $ollamaBin) {
+        Say "WARN: ollama nao encontrado; nao ha modelos para instalar. Instale em https://ollama.com" -color Yellow
+    } else {
+        $installed = & $ollamaBin.Source list 2>$null
+        foreach ($model in @("moondream", "llama3.2:3b")) {
+            if ($installed -match [regex]::Escape($model)) {
+                Say "OK: modelo ja instalado ($model)"
+            } else {
+                $size = if ($model -eq "llama3.2:3b") { "~2.0 GB" } else { "~1.7 GB" }
+                Say "Baixando modelo $model ($size)..."
+                & $ollamaBin.Source pull $model
+                if ($LASTEXITCODE -eq 0) { Say "OK: $model instalado" } else { Say "WARN: falha ao baixar $model" -color Yellow }
+            }
+        }
+    }
+}
+
+# ---------- 5. .env ----------
 $envFile = Join-Path $codeDir ".env"
 if (-not (Test-Path $envFile)) {
     Copy-Item (Join-Path $codeDir ".env.example") $envFile -Force
@@ -189,6 +223,13 @@ if (-not $NoSchedule) {
         Say "OK: tarefa agendada 'Laura Update' (diario 03:00)"
     } else {
         Say "WARN: nao consegui criar a tarefa agendada (rode como admin?). Atualizacao via boot ainda funciona." -color Yellow
+    }
+    $bkCmd = "powershell.exe -NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File `"$codeDir\scripts\laura-backup.ps1`""
+    schtasks /Create /TN "Laura Backup" /TR "'$bkCmd'" /SC DAILY /ST 03:30 /F | Out-Null
+    if ($LASTEXITCODE -eq 0) {
+        Say "OK: tarefa agendada 'Laura Backup' (diario 03:30, retem 7 dias)"
+    } else {
+        Say "WARN: nao consegui criar a tarefa de backup" -color Yellow
     }
 }
 

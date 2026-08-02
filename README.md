@@ -5,17 +5,21 @@
 [![Tests](https://img.shields.io/badge/tests-1327%20passing-brightgreen)]()
 [![Coverage](https://img.shields.io/badge/coverage-43%25-yellow)]()
 [![Docs](https://img.shields.io/badge/docs-mkdocs-blue.svg)](https://meketref007.github.io/Laura/)
-[![Release](https://img.shields.io/badge/release-v3.0.0-blue.svg)](pyproject.toml)
+[![Release](https://img.shields.io/badge/release-v3.1.0-blue.svg)](https://github.com/Meketref007/Laura/releases)
+[![Setup.exe](https://img.shields.io/badge/instalador-Windows-blue.svg)](installer/README.md)
 [![Python 3.12+](https://img.shields.io/badge/python-3.12%2B-blue.svg)](pyproject.toml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![Open Source](https://img.shields.io/badge/open%20source-%E2%9C%93-brightgreen)](LICENSE)
 
 Laura é um agente de IA autônomo para vendedores Shopee.  Funciona **100% local** (sem custos de API),
 integrando-se à API Shopee Open Platform, ao Seller Center via browser, e ao Telegram para notificações
-e comando remoto.
+e comando remoto. **100% open source (MIT)** e **custo zero**: instalador gratuito, modelos locais via
+Ollama e infraestrutura gratuita (GitHub Actions, Cloudflare Tunnel).
 
 | Característica | Valor |
 |---|---|
 | Custo operacional | **R$ 0,00/mês** (Ollama local) |
+| Licença | MIT (open source) |
 | Stack | Python 3.12, Ollama, FastAPI, Playwright |
 | Modelos LLM | llama3.2:3b (padrão), DeepHat, TinyLlama, Qwen 2.5, Mistral, Llama 2 |
 | APIs integradas | Shopee Open API v2, Seller Center (cookie), Telegram Bot |

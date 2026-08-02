@@ -5,17 +5,26 @@ Zero dependencias extras (apenas tkinter, que vem com o Python).
 
 import os
 import queue
-import re
 import subprocess
 import sys
 import threading
-import time
-import urllib.request
 import webbrowser
 from pathlib import Path
 
 import tkinter as tk
 from tkinter import ttk, messagebox
+
+from laura_common import (
+    EMPTY,
+    DOT,
+    git_short_sha,
+    health_check,
+    parse_status,
+    read_version,
+    resolve_code_dir,
+    tail_lines,
+    ver_gt,
+)
 
 try:
     import ctypes
@@ -25,66 +34,8 @@ except Exception:
     pass
 
 APP_TITLE = "Laura — Painel de Controle"
-DOT = "\u25cf"  # ●
-EMPTY = "\u25cb"  # ○
 
 SERVICES = ["webhook", "telegram", "daemon", "watchdog"]
-
-
-def resolve_code_dir() -> Path:
-    override = os.environ.get("LAURA_HOME")
-    if override:
-        return Path(override)
-    return Path(os.environ.get("LOCALAPPDATA", "")) / "Laura" / "code"
-
-
-def read_version(code_dir: Path) -> str:
-    pyproject = code_dir / "pyproject.toml"
-    if pyproject.exists():
-        m = re.search(r'^version\s*=\s*"([^"]+)"', pyproject.read_text(encoding="utf-8"), re.M)
-        if m:
-            return m.group(1)
-    return "?"
-
-
-def git_short_sha(code_dir: Path) -> str:
-    try:
-        out = subprocess.run(
-            ["git", "-C", str(code_dir), "rev-parse", "--short", "HEAD"],
-            capture_output=True, text=True, timeout=5, creationflags=subprocess.CREATE_NO_WINDOW,
-        )
-        return out.stdout.strip() if out.returncode == 0 else "?"
-    except Exception:
-        return "?"
-
-
-def parse_status(text: str) -> dict:
-    result = {}
-    for m in re.finditer(r"^\s*(webhook|telegram|daemon|watchdog|outro)\s+PID\s+(\d+)", text, re.M):
-        result[m.group(1)] = int(m.group(2))
-    return result
-
-
-def health_check(port: int = 8766) -> bool:
-    try:
-        with urllib.request.urlopen(f"http://127.0.0.1:{port}/health", timeout=3) as r:
-            return r.status == 200
-    except Exception:
-        return False
-
-
-def tail_lines(path: Path, n: int = 250, max_bytes: int = 64 * 1024) -> str:
-    if not path.exists():
-        return "(sem log ainda — inicie os servicos)"
-    try:
-        size = path.stat().st_size
-        with open(path, "rb") as f:
-            f.seek(max(0, size - max_bytes))
-            data = f.read()
-        lines = data.decode("utf-8", errors="replace").splitlines()
-        return "\n".join(lines[-n:]) if lines else "(vazio)"
-    except Exception as exc:
-        return f"(erro ao ler log: {exc})"
 
 
 class Painel(tk.Tk):
@@ -148,15 +99,17 @@ class Painel(tk.Tk):
             ("start", "Iniciar", self.action_start),
             ("stop", "Parar", self.action_stop),
             ("restart", "Reiniciar", self.action_restart),
-            ("update", "Atualizar agora", self.action_update),
+            ("update", "Atualizar", self.action_update),
+            ("backup", "Backup", self.action_backup),
         ]):
-            b = tk.Button(actions, text=label, font=("Segoe UI", 10, "bold"), width=16,
+            b = tk.Button(actions, text=label, font=("Segoe UI", 10, "bold"), width=13,
                           command=cmd, bg="#ffffff", activebackground="#e8edf5", relief="solid", bd=1)
-            b.grid(row=0, column=col, padx=(0, 10))
+            b.grid(row=0, column=col, padx=(0, 8))
             self.buttons[key] = b
         links = tk.Frame(actions, bg="#f4f6f9")
-        links.grid(row=0, column=4, sticky="e", padx=(10, 0))
+        links.grid(row=0, column=5, sticky="e", padx=(10, 0))
         for text, cmd in [("Dashboard", lambda: webbrowser.open("http://127.0.0.1:8766/")),
+                          ("Nova versão?", self.check_new_setup_version),
                           ("Logs", self.open_logs),
                           ("Pasta", self.open_folder)]:
             tk.Button(links, text=text, font=("Segoe UI", 9), command=cmd,
@@ -262,6 +215,40 @@ class Painel(tk.Tk):
 
         self.set_busy(True, "atualizando...")
         threading.Thread(target=worker, daemon=True).start()
+
+    def action_backup(self):
+        def worker():
+            try:
+                res = self.run_ps("laura-backup.ps1")
+                self.queue.put(("done", "backup", (res.stdout or res.stderr or "").strip()))
+            except Exception as exc:
+                self.queue.put(("done", "backup", f"erro: {exc}"))
+
+        self.set_busy(True, "fazendo backup...")
+        threading.Thread(target=worker, daemon=True).start()
+
+    @staticmethod
+    def _ver_gt(a: str, b: str) -> bool:
+        return ver_gt(a, b)
+
+    def check_new_setup_version(self):
+        import json
+        try:
+            with urllib.request.urlopen("https://api.github.com/repos/Meketref007/Laura/releases/latest", timeout=8) as r:
+                data = json.load(r)
+            tag = data.get("tag_name", "")
+            current = read_version(self.code_dir)
+            if tag.startswith("v") and self._ver_gt(tag[1:], current):
+                messagebox.showinfo(
+                    "Nova versão disponível",
+                    f"Laura {tag[1:]} disponível (você tem {current}).\n\n"
+                    "Baixe o Setup.exe na página de Releases.",
+                )
+                webbrowser.open(data.get("html_url", "https://github.com/Meketref007/Laura/releases"))
+            else:
+                messagebox.showinfo("Laura", f"Você já está na versão mais recente ({current}).")
+        except Exception as exc:
+            messagebox.showerror("Verificação", f"Não foi possível verificar: {exc}")
 
     def open_logs(self):
         logs_dir = self.code_dir / "logs"

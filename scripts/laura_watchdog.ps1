@@ -147,6 +147,29 @@ function Is-Alive($procId) {
     return ($null -ne (Get-Process -Id $procId -ErrorAction SilentlyContinue))
 }
 
+$script:restartTimes = @()
+$script:crashAlertSent = $false
+
+function Send-TelegramAlert($text) {
+    try {
+        $envVars = @{}
+        Get-Content "$rootDir\.env" -ErrorAction SilentlyContinue | ForEach-Object {
+            if ($_ -match "^([A-Za-z0-9_]+)=(.*)$") { $envVars[$matches[1]] = $matches[2] }
+        }
+        $token = $envVars["LAURA_ALERT_TELEGRAM_BOT_TOKEN"]
+        $chat = $envVars["LAURA_ALERT_TELEGRAM_CHAT_ID"]
+        if (-not $token -or -not $chat) {
+            Write-Log "[WATCHDOG] alerta nao enviado (token/chat ausentes no .env)"
+            return
+        }
+        $uri = "https://api.telegram.org/bot$token/sendMessage"
+        Invoke-RestMethod -Uri $uri -Method Post -Body @{ chat_id = $chat; text = $text } -TimeoutSec 15 | Out-Null
+        Write-Log "[WATCHDOG] alerta Telegram enviado"
+    } catch {
+        Write-Log "[WATCHDOG] falha ao enviar alerta: $_"
+    }
+}
+
 # Initial start (adota daemon existente, se houver; evita daemons duplicados)
 $daemonPid = Start-Daemon
 
@@ -157,6 +180,23 @@ while ($true) {
         Write-Log "[WATCHDOG] Daemon morto (PID $daemonPid). Reiniciando..."
         Write-Host "[WATCHDOG] Daemon died (PID $daemonPid). Restarting..." -ForegroundColor Yellow
         $daemonPid = Start-Daemon
+        # alerta se caiu 2+ vezes em 10 minutos (1 alerta, depois silencia por 1h)
+        $script:restartTimes = @($script:restartTimes | Where-Object { $_ -gt (Get-Date).AddMinutes(-10) })
+        $script:restartTimes += (Get-Date)
+        if ($script:restartTimes.Count -ge 2 -and -not $script:crashAlertSent) {
+            Send-TelegramAlert "ALERTA LAURA: o daemon reiniciou $($script:restartTimes.Count)x em 10min - possivel problema serio (crash loop)."
+            $script:crashAlertSent = $true
+        }
+        if ((Get-Date) -gt (Get-Date).AddHours(-1) -and -not $script:crashAlertSent) {
+            $script:restartTimes = @()
+        }
+    } else {
+        # saudavel: zera janela de alerta apos 30min sem queda
+        $lastRestart = if ($script:restartTimes.Count) { $script:restartTimes[-1] } else { $null }
+        if ($lastRestart -and $lastRestart -lt (Get-Date).AddMinutes(-30)) {
+            $script:restartTimes = @()
+            $script:crashAlertSent = $false
+        }
     }
 
     # Also check daemon health endpoint

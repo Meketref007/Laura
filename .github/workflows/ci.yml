@@ -74,3 +74,66 @@ jobs:
 
       - name: Run mypy
         run: mypy shopee_agent/paths.py shopee_agent/config.py shopee_agent/logger.py shopee_agent/retry.py shopee_agent/rate_limit.py shopee_agent/structured_logger.py shopee_agent/tracing.py shopee_agent/event_bus.py shopee_agent/api_cache.py shopee_agent/auth.py shopee_agent/graceful_shutdown.py shopee_agent/plugin_sdk.py shopee_agent/api_router.py --ignore-missing-imports --follow-imports=skip --no-error-summary
+
+  pester:
+    runs-on: windows-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+      - name: Install Pester
+        shell: pwsh
+        run: Install-Module Pester -Force -Scope CurrentUser -SkipPublisherCheck
+      - name: Run Pester (scripts PowerShell)
+        shell: pwsh
+        run: Invoke-Pester -Path .\tests\pester -Output Detailed -PassThru
+        env:
+          CI: "true"
+
+  build-setup:
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - name: Install pillow (icone do Setup)
+        run: python -m pip install pillow
+      - name: Build Setup.exe
+        shell: pwsh
+        run: .\installer\build_setup.ps1
+      - uses: actions/upload-artifact@v6
+        with:
+          name: laura-setup
+          path: dist\Laura-Setup-*.exe
+          if-no-files-found: error
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: windows-latest
+    timeout-minutes: 30
+    needs: [test, mypy, pester, build-setup]
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v5
+      - name: Download Setup.exe
+        uses: actions/download-artifact@v6
+        with:
+          name: laura-setup
+          path: dist
+      - name: Gerar checksums SHA256
+        shell: pwsh
+        run: |
+          Get-ChildItem dist\*.exe | ForEach-Object {
+            $h = (Get-FileHash $_.FullName -Algorithm SHA256).Hash.ToLower()
+            "$h *$($_.Name)" | Out-File -FilePath dist\SHA256SUMS.txt -Append -Encoding ascii
+          }
+          Get-Content dist\SHA256SUMS.txt
+      - name: Publicar Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: pwsh
+        run: |
+          $notes = "Laura $env:GITHUB_REF_NAME - instalador Windows com painel de controle e atualizacao automatica.`n`nVerifique o checksum em SHA256SUMS.txt."
+          gh release create $env:GITHUB_REF_NAME dist\Laura-Setup-*.exe dist\SHA256SUMS.txt --title "Laura $env:GITHUB_REF_NAME" --notes $notes
