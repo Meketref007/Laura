@@ -37,8 +37,9 @@ def check_low_stock(seller_client, threshold: int = 5) -> list[dict]:
     """Retorna produtos com estoque abaixo do threshold."""
     alerts = []
     try:
-        items = seller_client.get_item_list(limit=100)
-        for item in items.get("item_list", items.get("items", [])):
+        getter = getattr(seller_client, "get_products", None) or getattr(seller_client, "get_item_list", None)
+        raw = getter(limit=100)
+        for item in raw if isinstance(raw, list) else raw.get("item_list", raw.get("items", [])):
             stock = item.get("stock", 0)
             name = item.get("item_name", item.get("name", "?"))
 

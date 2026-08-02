@@ -312,8 +312,9 @@ def update_competitor_data(seller_client) -> dict:
     """Atualiza dados de concorrentes para todos os produtos via search scraper."""
     from shopee_agent.shopee_search_scraper import batch_update
     try:
-        items = seller_client.get_item_list(limit=200)
-        all_items = items.get("item_list", items.get("items", []))
+        getter = getattr(seller_client, "get_products", None) or getattr(seller_client, "get_item_list", None)
+        raw = getter(limit=200)
+        all_items = raw if isinstance(raw, list) else raw.get("item_list", raw.get("items", []))
         results = batch_update(all_items)
         return {
             "updated": len(results),

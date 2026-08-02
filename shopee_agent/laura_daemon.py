@@ -799,13 +799,11 @@ class LauraDaemon:
                 summary = ia.generate_executive_summary(days=7, language="pt_BR")
                 if summary and isinstance(summary, dict):
                     txt = summary.get("ai_analysis", summary.get("reasoning", str(summary)))
-                    from shopee_agent.vilu_workers import _post
                     _post("sistema", f"🧠 *Insights LLM (7d)*\n{txt[:2000]}")
                     print("[LauraDaemon] insights_llm OK")
                 recom = ia.generate_smart_recommendations(context="daily_operations", language="pt_BR")
                 if recom and isinstance(recom, dict):
                     rtxt = recom.get("ai_recommendations", str(recom))
-                    from shopee_agent.vilu_workers import _post
                     _post("sistema", f"💡 *Recomendacoes LLM*\n{rtxt[:2000]}")
                 self._last_insights = agora
             except Exception as e:
@@ -909,7 +907,6 @@ class LauraDaemon:
                     aid = art["article_id"]
                     title = art["title"]
                     snippet = art.get("snippet", "")
-                    from shopee_agent.vilu_workers import _post
                     _post("sistema",
                         f"💡 *Dica do Dia: {title}*\n\n"
                         f"{snippet}\n\n"
