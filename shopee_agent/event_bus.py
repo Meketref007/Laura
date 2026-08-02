@@ -224,6 +224,22 @@ class AsyncEventBus:
         self._ready.wait(timeout=5)
         info("Async event bus started", worker_count=self.worker_count)
 
+    def _schedule_put(self, queue: Any, item: Any, loop: Any) -> bool:
+        coro = queue.put(item)
+        try:
+            asyncio.run_coroutine_threadsafe(coro, loop)
+            return True
+        except RuntimeError:
+            coro.close()
+            return False
+
+    def _schedule_put_nowait(self, queue: Any, item: Any, loop: Any) -> bool:
+        try:
+            loop.call_soon_threadsafe(queue.put_nowait, item)
+            return True
+        except RuntimeError:
+            return False
+
     def stop(self) -> None:
         if not self._running:
             return
@@ -232,12 +248,12 @@ class AsyncEventBus:
         loop = self._loop
         queue = self._queue
         high_queue = self._high_queue
-        if loop and queue is not None:
+        if loop and not loop.is_closed() and queue is not None:
             for _ in range(self.worker_count):
-                asyncio.run_coroutine_threadsafe(queue.put(_STOP_SENTINEL), loop)
+                self._schedule_put_nowait(queue, _STOP_SENTINEL, loop)
             if high_queue is not None:
                 for _ in range(self.worker_count):
-                    asyncio.run_coroutine_threadsafe(high_queue.put(_STOP_SENTINEL), loop)
+                    self._schedule_put_nowait(high_queue, _STOP_SENTINEL, loop)
 
         if self._thread:
             self._thread.join(timeout=5)
@@ -264,7 +280,8 @@ class AsyncEventBus:
 
         is_critical = getattr(event, "event_type", None) in _CRITICAL_EVENT_TYPES
         target = high_queue if is_critical and high_queue is not None else queue
-        asyncio.run_coroutine_threadsafe(target.put(event), loop)
+        if not self._schedule_put(target, event, loop):
+            self._dispatch_sync(event)
         with self._stats_lock:
             self._stats.queued += 1
 
@@ -282,7 +299,10 @@ class AsyncEventBus:
             if self._high_queue is not None:
                 await self._high_queue.join()
 
-        future = asyncio.run_coroutine_threadsafe(_both_joined(), self._loop)
+        try:
+            future = asyncio.run_coroutine_threadsafe(_both_joined(), self._loop)
+        except RuntimeError:
+            return False
         try:
             future.result(timeout=timeout)
             return True

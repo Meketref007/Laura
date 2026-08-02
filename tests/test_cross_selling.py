@@ -119,8 +119,10 @@ class TestCrossSellingEngine:
         assert len(pairs) == 2
         assert pairs[0]["product_a"] < pairs[0]["product_b"]
 
-    def test_get_top_selling_pairs_empty(self, engine):
-        assert engine.get_top_selling_pairs() == []
+    def test_get_top_selling_pairs_empty(self, engine, tmp_path):
+        graph_path = tmp_path / "cross_sell_graph.json"
+        with patch("shopee_agent.cross_selling.CROSS_SELL_GRAPH", graph_path):
+            assert engine.get_top_selling_pairs() == []
 
     def test_cross_selling_skill_run_recommend(self, sample_orders):
         skill = CrossSellingSkill()

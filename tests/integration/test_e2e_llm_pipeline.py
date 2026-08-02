@@ -18,6 +18,11 @@ from shopee_agent.llm_providers import (
 )
 
 
+@pytest.fixture(autouse=True)
+def _disable_llm_cache(monkeypatch):
+    monkeypatch.setenv("LAURA_LLM_CACHE", "0")
+
+
 @pytest.fixture
 def mock_ollama_available():
     with patch.object(OllamaProvider, "is_available", return_value=True) as mock:
