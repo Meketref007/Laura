@@ -2,8 +2,8 @@
 
 [![CI](https://github.com/Meketref007/Laura/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Meketref007/Laura/actions/workflows/ci.yml)
 [![Python 3.12](https://img.shields.io/badge/python-3.12-blue?logo=python)](https://www.python.org/)
-[![Tests](https://img.shields.io/badge/tests-1327%20passing-brightgreen)]()
-[![Coverage](https://img.shields.io/badge/coverage-43%25-yellow)]()
+[![Tests](https://img.shields.io/badge/tests-1229%20passing-brightgreen)]()
+[![Coverage](https://img.shields.io/badge/coverage-44%25-yellow)]()
 [![Docs](https://img.shields.io/badge/docs-mkdocs-blue.svg)](https://meketref007.github.io/Laura/)
 [![Release](https://img.shields.io/badge/release-v3.1.0-blue.svg)](https://github.com/Meketref007/Laura/releases)
 [![Setup.exe](https://img.shields.io/badge/instalador-Windows-blue.svg)](installer/README.md)

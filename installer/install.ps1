@@ -7,7 +7,8 @@ param(
     [switch]$InstallModels,
     [switch]$NoSchedule,
     [switch]$NoShortcut,
-    [switch]$NoMigrate
+    [switch]$NoMigrate,
+    [switch]$AsService
 )
 
 $ErrorActionPreference = "Continue"
@@ -230,6 +231,22 @@ if (-not $NoSchedule) {
         Say "OK: tarefa agendada 'Laura Backup' (diario 03:30, retem 7 dias)"
     } else {
         Say "WARN: nao consegui criar a tarefa de backup" -color Yellow
+    }
+}
+
+# ---------- 5b. Servico sem login (ONSTART, requer admin) ----------
+if ($AsService) {
+    $svcCmd = "powershell.exe -NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File `"$codeDir\scripts\laura-services.ps1`" start"
+    $svcBootCmd = "powershell.exe -NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File `"$codeDir\scripts\laura-update.ps1`""
+    schtasks /Create /TN "Laura Services" /TR "'$svcCmd'" /SC ONSTART /RU SYSTEM /RL HIGHEST /F | Out-Null
+    if ($LASTEXITCODE -eq 0) {
+        Say "OK: tarefa 'Laura Services' (roda no boot SEM precisar de login)"
+    } else {
+        Say "WARN: nao consegui criar a tarefa ONSTART (rode o instalador como admin)." -color Yellow
+    }
+    schtasks /Create /TN "Laura Update Boot" /TR "'$svcBootCmd'" /SC ONSTART /RU SYSTEM /RL HIGHEST /F | Out-Null
+    if ($LASTEXITCODE -eq 0) {
+        Say "OK: tarefa 'Laura Update Boot' (update no boot sem login)"
     }
 }
 

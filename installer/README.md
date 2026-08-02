@@ -41,6 +41,7 @@ Flags úteis:
 | `-Force` | Reinstala por cima de uma instalação existente (sem apagar dados) |
 | `-NoSchedule` | Não cria a tarefa agendada de update diário |
 | `-NoShortcut` | Não cria atalhos nem início automático |
+| `-AsService` | Cria tarefas ONSTART (rodam no boot **sem precisar de login**). Requer **admin**: `powershell -File installer\install.ps1 -AsService` num terminal elevado |
 
 O que o instalador faz:
 
@@ -49,8 +50,10 @@ O que o instalador faz:
 3. Detecta uma instalação antiga (ex.: `OneDrive\Documentos\Laura\agente`),
    para os serviços dela e migra os dados (sem apagar a pasta antiga).
 4. Cria `.env` a partir do `.env.example` se não existir.
-5. Agenda **"Laura Update"** (diário às 03:00, Task Scheduler).
-6. Cria `iniciar_laura.vbs` + atalho no **Startup** (início automático no boot)
+5. Agenda **"Laura Update"** (diário às 03:00) e **"Laura Backup"** (diário às 03:30).
+6. Com `-AsService` (admin): cria **"Laura Services"** e **"Laura Update Boot"** com `ONSTART` —
+   webhook, telegram, daemon e watchdog sobem no boot mesmo sem ninguém fazer login.
+7. Cria `iniciar_laura.vbs` + atalho no **Startup** (início automático no boot)
    e atalhos no Menu Iniciar ("Laura CLI", "Iniciar Laura").
 
 ## Como funciona a atualização automática

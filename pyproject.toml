@@ -132,6 +132,9 @@ testpaths = ["tests"]
 filterwarnings = ["ignore::pytest.PytestUnhandledThreadExceptionWarning"]
 asyncio_default_fixture_loop_scope = "function"
 addopts = "-x -q --tb=short -n auto"
+markers = [
+    "integration: testes e2e que exercitam o pipeline completo (rodados no CI em job separado)",
+]
 
 [tool.setuptools.packages.find]
 where = ["."]

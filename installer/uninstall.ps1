@@ -24,7 +24,9 @@ Start-Sleep -Seconds 2
 # 2. Remove tarefas agendadas
 schtasks /Delete /TN "Laura Update" /F 2>$null | Out-Null
 schtasks /Delete /TN "Laura Backup" /F 2>$null | Out-Null
-Write-Host "Tarefas 'Laura Update' e 'Laura Backup' removidas."
+schtasks /Delete /TN "Laura Services" /F 2>$null | Out-Null
+schtasks /Delete /TN "Laura Update Boot" /F 2>$null | Out-Null
+Write-Host "Tarefas agendadas da Laura removidas."
 
 # 3. Atalhos
 $wsh = New-Object -ComObject WScript.Shell

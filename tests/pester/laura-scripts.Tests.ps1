@@ -33,7 +33,7 @@ Describe "Scripts PowerShell - sintaxe" {
 Describe "install.ps1" {
     It "tem os parametros esperados" {
         $content = Get-Content (Join-Path $script:repoRoot "installer\install.ps1") -Raw
-        foreach ($p in @("SkipClone", "InstallModels", "Force", "NoShortcut", "InstallDir")) {
+        foreach ($p in @("SkipClone", "InstallModels", "Force", "NoShortcut", "InstallDir", "AsService")) {
             $content | Should -Match ("\`$$p\b") -Because "parametro -$p"
         }
     }
@@ -41,6 +41,17 @@ Describe "install.ps1" {
         $content = Get-Content (Join-Path $script:repoRoot "installer\install.ps1") -Raw
         $content | Should -Match "Laura Update"
         $content | Should -Match "Laura Backup"
+    }
+    It "suporta -AsService (tarefa ONSTART sem login)" {
+        $content = Get-Content (Join-Path $script:repoRoot "installer\install.ps1") -Raw
+        $content | Should -Match "AsService"
+        $content | Should -Match "ONSTART"
+        $content | Should -Match "Laura Services"
+    }
+    It "uninstall remove as tarefas de servico" {
+        $content = Get-Content (Join-Path $script:repoRoot "installer\uninstall.ps1") -Raw
+        $content | Should -Match "Laura Services"
+        $content | Should -Match "Laura Update Boot"
     }
 }
 
