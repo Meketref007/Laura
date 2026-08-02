@@ -98,7 +98,35 @@ e comando remoto.
 
 ---
 
-## Instalação Rápida
+## Instalação (Windows, com atualização automática)
+
+Instalador oficial em `installer/` — instala em `%LOCALAPPDATA%\Laura`,
+migra dados de uma instalação antiga e mantém o código atualizado
+automaticamente (git pull a cada boot + 1x/dia):
+
+```powershell
+powershell -ExecutionPolicy Bypass -File installer\install.ps1
+```
+
+Detalhes e flags: [installer/README.md](installer/README.md).
+
+## Instalação manual / Docker
+
+Opcional, mas recomendado para rodar em **qualquer PC** (sem navegador, sem OneDrive):
+```powershell
+docker compose up -d   # ou: make up
+```
+
+Para desenvolvimento local:
+
+```bash
+git clone https://github.com/Meketref007/Laura.git
+cd Laura
+python -m venv .venv
+.venv\Scripts\activate        # Linux/macOS: source .venv/bin/activate
+pip install -e .
+cp .env.example .env          # edite com suas credenciais
+``` Rápida
 
 ### Linux / WSL
 
