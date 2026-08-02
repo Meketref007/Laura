@@ -117,10 +117,10 @@ junit.xml
 .coverage
 htmlcov/
 
-# PID / Launcher files
+# PID / Launcher files (apenas na raiz; installer/ tem arquivos versionados)
 *.pid
-*.vbs
-*.pyw
+/*.vbs
+/*.pyw
 
 # Temp
 tmp/

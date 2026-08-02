@@ -3,7 +3,26 @@
 Instala a Laura em `%LOCALAPPDATA%\Laura` (fora do OneDrive — portátil) e
 mantém o código sempre atualizado via `git pull` da `main`.
 
-## Como instalar
+## Distribuição "como um software"
+
+- **`Setup.exe`** (Inno Setup): instalador gráfico padrão Windows — instala,
+  configura, cria atalhos (Desktop + Menu Iniciar) e desinstala pelo
+  "Programas e recursos". Baixe em `dist\Laura-Setup-3.1.0.exe`.
+- **Painel de Controle** (`laura_painel.pyw`): app desktop com ícone no Menu
+  Iniciar — mostra status de webhook/telegram/daemon/watchdog, health check,
+  botões Iniciar/Parar/Reiniciar/Atualizar agora, logs do daemon ao vivo,
+  e atalhos para o Dashboard e pastas.
+
+Para gerar o Setup.exe:
+
+```powershell
+powershell -File installer\build_setup.ps1
+```
+
+O script gera o ícone (PIL), baixa o Inno Setup se não houver, e compila
+`laura_setup.iss` → `dist\Laura-Setup-<versão>.exe`.
+
+## Como instalar (sem Setup.exe)
 
 Requisitos: Windows 10/11, **git**, **Python 3.12+**, **Ollama**.
 

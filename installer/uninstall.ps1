@@ -49,9 +49,13 @@ if ($FullUninstall) {
     Remove-Item $InstallDir -Recurse -Force
     Write-Host "Removido por completo (codigo, venv, .env, secrets, relatorios)." -ForegroundColor Red
 } else {
-    Remove-Item $codeDir -Recurse -Force -ErrorAction SilentlyContinue
-    Write-Host "Codigo + venv removidos." -ForegroundColor Yellow
-    Write-Host "Seus DADOS (logs, backups, relatorios, .env) foram mantidos em: $InstallDir" -ForegroundColor Yellow
+    # mantem dados (logs, secrets, reports, backups, .env, data) e codigo
+    Remove-Item (Join-Path $codeDir ".venv") -Recurse -Force -ErrorAction SilentlyContinue
+    Remove-Item (Join-Path $codeDir ".git") -Recurse -Force -ErrorAction SilentlyContinue
+    Get-ChildItem $codeDir -Recurse -Directory -Filter "__pycache__" -ErrorAction SilentlyContinue |
+        Remove-Item -Recurse -Force -ErrorAction SilentlyContinue
+    Write-Host "Ambiente (venv/git/cache) removidos." -ForegroundColor Yellow
+    Write-Host "Seus DADOS e codigo foram mantidos em: $codeDir" -ForegroundColor Yellow
     Write-Host "Para apagar tudo: powershell -File installer\uninstall.ps1 -FullUninstall" -ForegroundColor Yellow
 }
 

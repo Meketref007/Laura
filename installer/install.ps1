@@ -3,6 +3,7 @@ param(
     [string]$OldDir = "",
     [switch]$InstallPlaywright,
     [switch]$Force,
+    [switch]$SkipClone,
     [switch]$NoSchedule,
     [switch]$NoShortcut,
     [switch]$NoMigrate
@@ -58,7 +59,27 @@ if (-not (Get-Command ollama -ErrorAction SilentlyContinue)) {
 }
 
 # ---------- 1. Codigo ----------
-if (Test-Path $codeDir) {
+if ($SkipClone) {
+    Say "SkipClone: usando o codigo ja instalado em $codeDir"
+    if (-not (Test-Path $codeDir)) {
+        Say "ERRO: -SkipClone mas $codeDir nao existe." -color Red
+        exit 1
+    }
+    if ($git -and -not (Test-Path "$codeDir\.git")) {
+        Say "Inicializando git (para as atualizacoes automaticas)..."
+        git -C $codeDir init 2>$null | Out-Null
+        git -C $codeDir remote add origin $RepoUrl 2>$null
+        git -C $codeDir fetch origin main --depth 1 2>$null | Out-Null
+        if ($LASTEXITCODE -eq 0) {
+            git -C $codeDir reset --hard origin/main 2>$null | Out-Null
+            Say "OK: repo git pronto (branch main)"
+        } else {
+            Say "WARN: fetch falhou; atualizacoes automaticas indisponiveis nesta sessao" -color Yellow
+        }
+    } elseif (-not $git) {
+        Say "WARN: git nao encontrado; atualizacoes automaticas indisponiveis" -color Yellow
+    }
+} elseif (Test-Path $codeDir) {
     if (-not $Force) {
         Say "ERRO: $codeDir ja existe. Use -Force para reinstalar (sem apagar dados)." -color Red
         exit 1
