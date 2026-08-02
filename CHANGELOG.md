@@ -4,11 +4,23 @@ Todas as mudanças relevantes do projeto são documentadas aqui.
 
 O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e o projeto adota [SemVer](https://semver.org/lang/pt-BR/).
 
-## [Unreleased]
+## [3.2.0] - 2026-08-02
 
 ### Adicionado
-- Job de testes de integração no CI (`pytest -m integration`).
-- Documentação das fases 37-41 (multi-agente, planejamento estratégico, analytics preditivo, inteligência competitiva, supply chain).
+- **Rodar sem login**: `install.ps1 -AsService` (admin) cria tarefas ONSTART
+  "Laura Services" e "Laura Update Boot" — webhook, telegram, daemon e watchdog
+  sobem no boot mesmo sem ninguém fazer login.
+- **Job de testes de integração no CI** (`pytest -m integration`, 107 testes)
+  — os testes e2e agora rodam em job separado; o job principal usa `-m "not integration"`.
+- **Testes e2e das camadas estratégicas** (`tests/integration/test_e2e_strategic_layers.py`)
+  — fases 37-41 validadas de ponta a ponta (orquestrador, planner, analytics, intel competitiva, supply chain).
+- **CHANGELOG público** (`CHANGELOG.md`, formato Keep a Changelog).
+- **Docs das fases 37-41** (`docs/PHASE_37_41.md`) — multi-agente, strategic planning,
+  predictive analytics, competitive intelligence e supply chain v2.
+- Badges do README atualizados com métricas reais (1229 testes, 44% cobertura).
+
+### Corrigido
+- Mark `integration` registrado no `pyproject.toml` (elimina o aviso de unknown mark).
 
 ## [3.1.0] - 2026-08-02
 
@@ -65,5 +77,6 @@ As funcionalidades anteriores a essa data estão resumidas abaixo:
 - **CEO mode** (`LAURA_CEO_MODE=1`): autonomia total com guardrails.
 - **Docker compose** (`make up`) com Laura + Ollama.
 
-[Unreleased]: https://github.com/Meketref007/Laura/compare/v3.1.0...HEAD
+[Unreleased]: https://github.com/Meketref007/Laura/compare/v3.2.0...HEAD
+[3.2.0]: https://github.com/Meketref007/Laura/releases/tag/v3.2.0
 [3.1.0]: https://github.com/Meketref007/Laura/releases/tag/v3.1.0
