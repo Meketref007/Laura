@@ -128,10 +128,20 @@ pip install -e ".[dev]"
 playwright install chromium
 ```
 
-Para auto-login via CDP, execute Brave/Chrome com:
+Para auto-login via CDP, qualquer navegador Chromium serve (Brave, Chrome ou
+Edge — o Edge já vem no Windows). Basta abri-lo com a porta de debug:
 ```bash
-brave --remote-debugging-port=9222 &
+"<caminho-do-browser>" --remote-debugging-port=9222
 ```
+
+O watchdog (`scripts/laura_watchdog.ps1`) detecta automaticamente
+Brave → Chrome → Edge (ou `LAURA_CDP_BROWSER_PATH`), lança **no máximo 1x
+por sessão** e só com a flag `-CdpAutoLaunch`. Sem CDP, a Laura segue
+funcionando normalmente via Shopee Open API — o navegador só é necessário
+para o auto-login e ações avançadas do Seller Center.
+
+> **Rodar em qualquer PC:** o caminho recomendado é o Docker (`make up`),
+> que empacota Laura + Ollama e não depende de navegador nem deste PC.
 
 ---
 
@@ -1045,7 +1055,7 @@ uma GPU com 4-8 GB VRAM ajuda, mas não é obrigatória.
 ### Laura funciona no Windows?
 
 Sim.  Use PowerShell e siga a [instalação Windows](#windows).
-Playwright e CDP funcionam com Chrome/Brave no Windows.
+Playwright e CDP funcionam com qualquer navegador Chromium (Chrome, Brave, Edge) no Windows.
 
 ### Laura acessa meus dados da Shopee?
 
