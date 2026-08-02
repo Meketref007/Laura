@@ -1,4 +1,4 @@
-.PHONY: test test-quick lint format typecheck clean install dev docker docker-build pre-commit help
+.PHONY: help install dev test test-quick lint format typecheck clean docker-build docker up down logs ps pull pre-commit
 
 help:
 	@echo "Laura — Comandos disponiveis:"
@@ -10,7 +10,12 @@ help:
 	@echo "  make format      Rodar ruff format"
 	@echo "  make typecheck   Rodar mypy (se instalado)"
 	@echo "  make clean       Limpar caches Python"
-	@echo "  make docker      Build + run Docker Compose"
+	@echo "  make up          Iniciar Laura + Ollama (Docker Compose, build)"
+	@echo "  make down        Parar containers"
+	@echo "  make logs        Ver logs dos containers"
+	@echo "  make ps          Status dos containers"
+	@echo "  make pull        Atualizar modelos Ollama do stack"
+	@echo "  make docker      Alias de make up"
 	@echo "  make docker-build Build imagem Docker"
 	@echo "  make pre-commit  Instalar pre-commit hooks"
 
@@ -43,8 +48,23 @@ clean:
 docker-build:
 	docker build -t laura:latest .
 
+up:
+	docker compose up --build -d
+
+down:
+	docker compose down
+
+logs:
+	docker compose logs -f
+
+ps:
+	docker compose ps
+
+pull:
+	docker compose exec laura python -m shopee_agent.llm_manager
+
 docker:
-	docker-compose up --build -d
+	docker compose up --build -d
 
 pre-commit:
 	pre-commit install

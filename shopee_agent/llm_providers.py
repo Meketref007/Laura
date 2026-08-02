@@ -126,7 +126,7 @@ class LLMProvider(ABC):
 OLLAMA_DEFAULT_HOST = "http://127.0.0.1:11434"
 
 DEFAULT_MODELS = {
-    "ollama": "tinyllama",
+    "ollama": "llama3.2:3b",
     "openai": "gpt-4o-mini",
     "anthropic": "claude-3-5-sonnet-20241022",
 }

@@ -93,7 +93,7 @@ def generate_daily_reports(*, inputs_path: str | None = None, out_xlsx: str | No
     if use_llm:
         try:
             from .llm_local import create_analyzer as create_local_analyzer
-            model_name = os.getenv("LAURA_LLM_MODEL", "tinyllama")
+            model_name = os.getenv("LAURA_LLM_MODEL", "llama3.2:3b")
             analyzer = create_local_analyzer(model=model_name)
             metrics = {
                 "revenue": data.get("revenue", 0) or 0,

@@ -3038,7 +3038,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     llm_analyze.add_argument(
         "--model",
-        default=os.getenv("LAURA_LLM_MODEL", "tinyllama"),
+        default=os.getenv("LAURA_LLM_MODEL", "llama3.2:3b"),
         choices=_MODEL_CHOICES,
         help="Modelo Ollama a usar",
     )
@@ -3058,7 +3058,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     ollama_status.add_argument(
         "--model",
-        default=os.getenv("LAURA_LLM_MODEL", "tinyllama"),
+        default=os.getenv("LAURA_LLM_MODEL", "llama3.2:3b"),
         choices=_MODEL_CHOICES,
         help="Modelo a verificar",
     )
@@ -3074,7 +3074,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     ollama_fix.add_argument(
         "--model",
-        default=os.getenv("LAURA_LLM_MODEL", "tinyllama"),
+        default=os.getenv("LAURA_LLM_MODEL", "llama3.2:3b"),
         choices=_MODEL_CHOICES,
         help="Modelo a carregar (default: tinyllama)",
     )

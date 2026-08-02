@@ -4,15 +4,25 @@ services:
   laura:
     build: .
     ports:
-      - "8888:8888"
+      - "8888:8888"   # Dashboard
+      - "8766:8766"   # Webhook Shopee
     volumes:
       - ./reports:/app/reports
       - ./plugins:/app/plugins
       - ./data:/app/data
+      - ./logs:/app/logs
     environment:
       - LAURA_OLLAMA_HOST=http://ollama:11434
-      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN:-}
+      - LAURA_LLM_MODEL=${LAURA_LLM_MODEL:-llama3.2:3b}
+      - LAURA_CEO_MODE=${LAURA_CEO_MODE:-0}
+      - LAURA_ALERT_TELEGRAM_BOT_TOKEN=${LAURA_ALERT_TELEGRAM_BOT_TOKEN:-}
+      - LAURA_ALERT_TELEGRAM_CHAT_ID=${LAURA_ALERT_TELEGRAM_CHAT_ID:-}
       - DASHBOARD_API_KEY=${DASHBOARD_API_KEY:-}
+      - SHOPEE_PARTNER_ID=${SHOPEE_PARTNER_ID:-}
+      - SHOPEE_PARTNER_KEY_SHA256=${SHOPEE_PARTNER_KEY_SHA256:-}
+      - SHOPEE_DEFAULT_ACCESS_TOKEN=${SHOPEE_DEFAULT_ACCESS_TOKEN:-}
+      - SHOPEE_DEFAULT_SHOP_ID=${SHOPEE_DEFAULT_SHOP_ID:-}
+      - CDP_WS_URL=${CDP_WS_URL:-}
     depends_on:
       ollama:
         condition: service_started
@@ -20,8 +30,6 @@ services:
 
   ollama:
     image: ollama/ollama:latest
-    profiles:
-      - ollama
     ports:
       - "11434:11434"
     volumes:

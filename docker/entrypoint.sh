@@ -1,30 +1,42 @@
 #!/bin/bash
 set -e
 
-# Wait for Ollama if using local LLM
-if [ -n "${LAURA_OLLAMA_HOST:-}" ]; then
-    OLLAMA_URL="${LAURA_OLLAMA_HOST}:${LAURA_OLLAMA_PORT:-11434}"
-    echo "Waiting for Ollama at $OLLAMA_URL..."
-    for i in $(seq 1 30); do
-        if curl -sf "$OLLAMA_URL/api/tags" > /dev/null 2>&1; then
-            echo "Ollama is ready"
-            break
-        fi
-        if [ "$i" -eq 30 ]; then
-            echo "Warning: Ollama not reachable after 30s, continuing anyway"
-        fi
-        sleep 1
-    done
+echo "=== Laura Agent Startup ==="
+
+OLLAMA_HOST="${LAURA_OLLAMA_HOST:-http://localhost:11434}"
+
+# Wait for Ollama
+echo "Waiting for Ollama at $OLLAMA_HOST..."
+until curl -s "${OLLAMA_HOST}/api/tags" > /dev/null 2>&1; do
+    sleep 2
+done
+echo "Ollama ready!"
+
+# Download models (LLM + vision)
+MODEL="${LAURA_LLM_MODEL:-llama3.2:3b}"
+echo "Checking models (LAURA_LLM_MODEL=${MODEL})..."
+python -m shopee_agent.llm_manager
+
+if [ "${LAURA_CEO_MODE}" = "1" ]; then
+    echo "🚀 CEO MODE ATIVO — acoes executadas sem aprovacao humana"
+else
+    echo "Modo padrao: aprovacao humana obrigatoria (LAURA_CEO_MODE=1 para autonomia total)"
 fi
 
-# Ensure required directories exist
-mkdir -p /home/shopee/agente/logs \
-         /home/shopee/agente/reports \
-         /home/shopee/agente/backups
+# Start webhook server in background
+echo "Starting webhook on :8766..."
+python -m shopee_agent.cli webhook-start --host 0.0.0.0 --port 8766 &
+WEBHOOK_PID=$!
 
-# Copy .env from mounted env/ directory (workaround for Windows bind mount locking)
-if [ -f /home/shopee/agente/env/.env ]; then
-    cp /home/shopee/agente/env/.env /home/shopee/agente/.env 2>/dev/null || true
-fi
+# Start telegram bot in background
+echo "Starting telegram bot..."
+python -m shopee_agent.cli telegram-bot &
+TELEGRAM_PID=$!
 
-exec "$@"
+# Start daemon
+echo "Starting daemon..."
+python -m shopee_agent.laura_daemon
+
+# Cleanup on exit
+kill $WEBHOOK_PID $TELEGRAM_PID 2>/dev/null
+echo "Laura stopped"

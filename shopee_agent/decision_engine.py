@@ -700,7 +700,7 @@ class DecisionEngine:
                 vec = None
                 try:
                     from .llm_local import LauraOllamaAnalyzer
-                    analyzer = LauraOllamaAnalyzer(model=os.getenv("LAURA_LLM_MODEL", "tinyllama"), pull_model=False)
+                    analyzer = LauraOllamaAnalyzer(model=os.getenv("LAURA_LLM_MODEL", "llama3.2:3b"), pull_model=False)
                     vec = analyzer.embed_text(f"{outcome.rule_id} {outcome.metadata.get('decision_title','')}")
                 except Exception:
                     vec = None

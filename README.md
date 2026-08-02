@@ -17,7 +17,7 @@ e comando remoto.
 |---|---|
 | Custo operacional | **R$ 0,00/mês** (Ollama local) |
 | Stack | Python 3.12, Ollama, FastAPI, Playwright |
-| Modelos LLM | TinyLlama (padrão), Mistral, Llama 2, Qwen 2.5 |
+| Modelos LLM | llama3.2:3b (padrão), DeepHat, TinyLlama, Qwen 2.5, Mistral, Llama 2 |
 | APIs integradas | Shopee Open API v2, Seller Center (cookie), Telegram Bot |
 | Automação | GOAP Planner, Decision Engine, Skills modulares |
 
@@ -659,13 +659,48 @@ laura ab-auto-promote --test-id pricing_skill
 ## Docker
 
 ```bash
-docker-compose up --build
+# Inicia Laura + Ollama (build e sobe em background)
+make up
+
+# Parar / logs / status
+make down
+make logs
+make ps
+
+# Atualizar modelos Ollama dentro do stack
+make pull
 ```
 
 O Compose inicia:
-- Laura com daemon e webhook
-- Ollama com modelo TinyLlama
-- Cloudflare Tunnel (opcional)
+- Laura com daemon, webhook (:8766) e dashboard (:8888)
+- Ollama com o modelo definido em `LAURA_LLM_MODEL` (padrão `llama3.2:3b`)
+- Redis (opcional — `docker compose --profile redis up -d`)
+
+Variáveis principais no `.env` (lidas automaticamente pelo Compose):
+`SHOPEE_PARTNER_ID`, `SHOPEE_PARTNER_KEY_SHA256`, `SHOPEE_DEFAULT_ACCESS_TOKEN`,
+`SHOPEE_DEFAULT_SHOP_ID`, `LAURA_ALERT_TELEGRAM_BOT_TOKEN`, `LAURA_ALERT_TELEGRAM_CHAT_ID`,
+`LAURA_LLM_MODEL`, `LAURA_CEO_MODE`, `DASHBOARD_API_KEY`.
+
+---
+
+## Modo CEO (autonomia total)
+
+Por padrão, toda ação executada por Laura exige **aprovação humana** (via Telegram,
+dashboard ou CLI). Com `LAURA_CEO_MODE=1` no `.env`, Laura opera de forma autônoma:
+
+- **Auto-aprova decisões** geradas pelo decision engine (todas as prioridades)
+- **Executa skills de alta prioridade** (HIGH/CRITICAL) sem intervenção
+- **Envia pedidos prontos** automaticamente (equivalente a `/enviar_<order_sn>`)
+- **Responde chat de compradores** sem aprovação manual (chat_auto)
+
+```bash
+# .env
+LAURA_CEO_MODE=1
+```
+
+Cada ação executada continua registrada em `reports/pending_decisions_*.jsonl`
+e é notificada no Telegram com o prefixo *CEO Mode*. Recomendado manter
+`SELLER_CENTER_DRY_RUN=1` até validar o comportamento em produção.
 
 ---
 
@@ -727,9 +762,10 @@ make typecheck   # mypy
 
 | Variável | Padrão | Descrição |
 |---|---|---|
-| `LAURA_LLM_MODEL` | `tinyllama` | Modelo Ollama |
+| `LAURA_LLM_MODEL` | `llama3.2:3b` | Modelo Ollama |
 | `LAURA_OLLAMA_HOST` | `127.0.0.1` | Host do Ollama |
 | `LAURA_OLLAMA_PORT` | `11434` | Porta do Ollama |
+| `LAURA_CEO_MODE` | `0` | `1` = Modo CEO: autonomia total (auto-aprova decisões, executa skills de alta prioridade e envia pedidos prontos sem aprovação humana) |
 | `LAURA_LLM_ENABLED` | `1` | Habilita LLM local |
 | `LAURA_LLM_REQUEST_TIMEOUT_SECONDS` | `30` | Timeout das requisições |
 | `LAURA_ALLOW_PAID_LLM` | `0` | Bloqueia APIs pagas |
@@ -886,7 +922,7 @@ ollama serve
 
 # Verificar modelo
 ollama list
-ollama run tinyllama
+ollama run llama3.2:3b
 ```
 
 ### "Erro de assinatura Shopee"
@@ -998,7 +1034,7 @@ A única conta necessária é o Partner ID gratuito da Shopee Open Platform.
 
 ### Preciso de GPU?
 
-Não. TinyLlama roda bem em CPU.  Para modelos maiores (Mistral, Qwen 2.5:7b),
+Não. llama3.2:3b e TinyLlama rodam bem em CPU.  Para modelos maiores (Mistral, Qwen 2.5:7b),
 uma GPU com 4-8 GB VRAM ajuda, mas não é obrigatória.
 
 ### Laura funciona no Windows?

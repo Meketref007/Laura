@@ -15,10 +15,12 @@ FROM base AS runtime
 COPY --from=builder /usr/local /usr/local
 COPY --from=builder /app /app
 
-EXPOSE 8888
+ENV LAURA_LLM_MODEL=llama3.2:3b
+ENV LAURA_CEO_MODE=0
+
+EXPOSE 8888 8766
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:8888/ || exit 1
 
-ENTRYPOINT ["python", "-m", "shopee_agent.cli"]
-CMD ["api-serve"]
+ENTRYPOINT ["/bin/bash", "/app/entrypoint.sh"]

@@ -114,7 +114,7 @@ def run(args, client=None, cfg=None):
                     import os
 
                     from shopee_agent.llm_local import LauraOllamaAnalyzer
-                    analyzer = LauraOllamaAnalyzer(model=os.getenv("LAURA_LLM_MODEL", "tinyllama"), pull_model=False)
+                    analyzer = LauraOllamaAnalyzer(model=os.getenv("LAURA_LLM_MODEL", "llama3.2:3b"), pull_model=False)
                     emb = analyzer.embed_text(args.text or "", dim=128)
                     if emb and isinstance(emb, list) and len(emb) > 0:
                         vec = emb

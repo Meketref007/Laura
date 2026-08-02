@@ -260,7 +260,7 @@ class SetupWizard:
         print()
 
         if _confirm("Use local Ollama (free, recommended)?", default=True):
-            model = _prompt("Ollama model", default="tinyllama")
+            model = _prompt("Ollama model", default="llama3.2:3b")
             self._config.setdefault("env", {})["LAURA_LLM_MODEL"] = model
             print(f"  {_ok('Local model selected:')} {_bold(model)}")
             return "local"

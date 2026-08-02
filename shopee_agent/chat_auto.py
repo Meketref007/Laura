@@ -130,7 +130,7 @@ class ChatAutomation:
         use_ollama: bool = True,
         cooldown_minutes: int = 60,
         max_responses_per_hour: int = 20,
-        human_approval: bool = True,
+        human_approval: bool | None = None,
     ):
         self.client = client
         self.access_token = access_token
@@ -139,6 +139,10 @@ class ChatAutomation:
         self.use_ollama = use_ollama
         self.cooldown_minutes = cooldown_minutes
         self.max_responses_per_hour = max_responses_per_hour
+        if human_approval is None:
+            from shopee_agent.ceo_mode import ceo_mode_enabled
+
+            human_approval = not ceo_mode_enabled()
         self.human_approval = human_approval
 
         self._last_response: dict[str, float] = {}
@@ -163,7 +167,7 @@ class ChatAutomation:
 
             if self.llm_engine is None and HAS_OLLAMA:
                 try:
-                    self.analyzer = LauraOllamaAnalyzer(model=os.getenv("LAURA_LLM_MODEL", "tinyllama"))
+                    self.analyzer = LauraOllamaAnalyzer(model=os.getenv("LAURA_LLM_MODEL", "llama3.2:3b"))
                     debug("ChatAutomation initialized with Ollama")
                 except Exception as exc:
                     log_error("Failed to initialize Ollama analyzer", error=str(exc))

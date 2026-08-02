@@ -10,6 +10,7 @@ from typing import Any
 
 import requests
 
+from shopee_agent.ceo_mode import ceo_mode_enabled
 from shopee_agent.decision_engine import DecisionEngine, DecisionPriority, DecisionStatus, create_default_rules
 from shopee_agent.decision_integration import DecisionExecutor, DecisionIntegrator
 
@@ -63,6 +64,7 @@ class AutonomousLoop:
     external_engine: Any | None = None
     external_integrator: Any | None = None
     enable_auto_skills: bool | None = None
+    ceo_mode: bool | None = None
     _cycle_counter: int = field(default=0, init=False, repr=False)
     _sent_approvals: dict = field(default_factory=dict, init=False, repr=False)
 
@@ -70,6 +72,8 @@ class AutonomousLoop:
         if self.enable_auto_skills is None:
             raw = os.getenv("LAURA_ENABLE_AUTO_SKILLS", "1")
             self.enable_auto_skills = str(raw).strip().lower() not in ("0", "false", "no", "off")
+        if self.ceo_mode is None:
+            self.ceo_mode = ceo_mode_enabled()
         self._predictive_analytics = (
             PredictiveAnalytics(reports_dir=str(self.reports_dir))
             if PredictiveAnalytics is not None
@@ -238,7 +242,7 @@ class AutonomousLoop:
 
             import requests as _req
             _ollama_host = _os.getenv("LAURA_OLLAMA_HOST", "http://127.0.0.1:11434")
-            _llm_model = _os.getenv("LAURA_LLM_MODEL", "qwen2.5:7b")
+            _llm_model = _os.getenv("LAURA_LLM_MODEL", "llama3.2:3b")
             _order_count = len(orders)
             _low_count = len(low)
             _prompt = (
@@ -395,9 +399,31 @@ class AutonomousLoop:
 
         decisions_list = list(engine.pending_decisions.values())
 
+        # Modo CEO: auto-aprova decisoes pendentes (sem aprovacao humana)
+        if self.ceo_mode:
+            auto_approved = 0
+            for d in decisions_list:
+                try:
+                    if d.status == DecisionStatus.PENDING:
+                        d.status = DecisionStatus.APPROVED
+                        auto_approved += 1
+                except Exception:
+                    continue
+            if auto_approved:
+                try:
+                    self._send_telegram(f"🤖 *CEO Mode* — {auto_approved} decisao(es) aprovada(s) automaticamente.")
+                except Exception:
+                    pass
+            try:
+                engine._save_pending()
+            except Exception:
+                pass
+
         # Notificar apenas decisoes PENDING de alta prioridade (1x por titulo)
         for d in decisions_list:
             try:
+                if self.ceo_mode:
+                    continue
                 if d.status == DecisionStatus.PENDING and d.priority in (DecisionPriority.HIGH, DecisionPriority.CRITICAL):
                     title_key = f"pending_approval_{d.title}"
                     if title_key not in self._sent_approvals:
@@ -411,14 +437,17 @@ class AutonomousLoop:
         executed = []
         for d in decisions_list:
             try:
-                if d.priority == DecisionPriority.LOW and d.status.name == "APPROVED":
-                    md = d.metadata if isinstance(d.metadata, dict) else {}
-                    if (md.get("skill") or md.get("skill_name")) and not self.enable_auto_skills:
-                        continue
-                    success = executor.execute(d)
-                    if success:
-                        integrator.mark_decision_executed(d.decision_id)
-                        executed.append(d.decision_id)
+                if d.status.name != "APPROVED":
+                    continue
+                md = d.metadata if isinstance(d.metadata, dict) else {}
+                if (md.get("skill") or md.get("skill_name")) and not self.enable_auto_skills:
+                    continue
+                if not self.ceo_mode and d.priority != DecisionPriority.LOW:
+                    continue
+                success = executor.execute(d)
+                if success:
+                    integrator.mark_decision_executed(d.decision_id)
+                    executed.append(d.decision_id)
             except Exception:
                 continue
 
@@ -431,7 +460,7 @@ class AutonomousLoop:
                     if d.status.name == "APPROVED":
                         md = d.metadata if isinstance(d.metadata, dict) else {}
                         if md.get("skill") or md.get("skill_name"):
-                            if d.priority in (DecisionPriority.CRITICAL, DecisionPriority.HIGH):
+                            if not self.ceo_mode and d.priority in (DecisionPriority.CRITICAL, DecisionPriority.HIGH):
                                 continue
                             success = executor.execute(d)
                             if success:
@@ -491,6 +520,24 @@ class AutonomousLoop:
             if not order_sn:
                 continue
             order = orders_by_sn.get(order_sn, {})
+            if self.ceo_mode and getattr(self.client, "ship_order", None) is not None:
+                # CEO mode: envia pedido pronto automaticamente
+                try:
+                    self.client.ship_order(
+                        access_token=self.access_token,
+                        shop_id=self.shop_id,
+                        order_sn=order_sn,
+                    )
+                    try:
+                        self._send_telegram(f"📦 *CEO Mode* — pedido {order_sn} enviado automaticamente.")
+                    except Exception:
+                        pass
+                except Exception as exc:
+                    try:
+                        self._send_telegram(f"⚠️ *CEO Mode* — falha ao enviar {order_sn}: {exc}")
+                    except Exception:
+                        pass
+                continue
             msg_lines = [
                 "📦 <b>Pedido pronto para envio</b>",
                 "",

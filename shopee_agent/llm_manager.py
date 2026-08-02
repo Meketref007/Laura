@@ -127,7 +127,7 @@ def garantir_modelo(nome: str) -> bool:
 def garantir_todos_modelos() -> bool:
     """Verifica e baixa todos os modelos necessarios."""
     modelos = [
-        os.getenv("LAURA_LLM_MODEL", "qwen2.5:7b"),
+        os.getenv("LAURA_LLM_MODEL", "llama3.2:3b"),
     ]
     vision = os.getenv("LAURA_VISION_MODEL", "bakllava:7b").strip()
     if vision and vision != "none":

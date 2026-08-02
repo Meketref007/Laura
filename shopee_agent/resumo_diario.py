@@ -22,7 +22,7 @@ def _gerar_analise_llm(faturamento: float, pedidos: int, cancelados: int, baixo_
     try:
         import requests as _req
         host = os.getenv("LAURA_OLLAMA_HOST", "http://127.0.0.1:11434")
-        model = os.getenv("LAURA_LLM_MODEL", "qwen2.5:7b")
+        model = os.getenv("LAURA_LLM_MODEL", "llama3.2:3b")
         prompt = (
             "Voce e Laura, analista da loja ViluShop na Shopee. "
             "Com base nos dados abaixo, escreva UM paragrafo curto e direto analisando o desempenho do dia. "

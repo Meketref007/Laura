@@ -16,7 +16,7 @@ from .llm_providers import LLMEngine
 class InsightsAnalyzer:
     """AI-powered insights generator using local LLM"""
 
-    def __init__(self, reports_dir: str = "reports", llm_model: str = "tinyllama", llm_timeout_seconds: int = 15, llm_engine: LLMEngine | None = None):
+    def __init__(self, reports_dir: str = "reports", llm_model: str = "llama3.2:3b", llm_timeout_seconds: int = 15, llm_engine: LLMEngine | None = None):
         self.reports_dir = Path(reports_dir)
         self.reports_dir.mkdir(exist_ok=True)
         self.llm_model = llm_model

@@ -291,7 +291,7 @@ def run(args, client=None, cfg=None):
             print("DRY RUN: store-analysis input data:", file=sys.stderr)
             print_json(analysis_data)
             return 0
-        model_name = args.model or os.getenv("LAURA_LLM_MODEL", "tinyllama")
+        model_name = args.model or os.getenv("LAURA_LLM_MODEL", "llama3.2:3b")
         try:
             from shopee_agent.llm_local import create_analyzer
             analyzer = create_analyzer(model_name)

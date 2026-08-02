@@ -58,7 +58,7 @@ def _gerar_resposta(rating_star: int, comment: str, product_name: str) -> str:
                 f"Produto: {product_name}\nNota: {rating_star}/5\nComentario: {comment or '-'}\n\n"
                 f"Resposta curta (max 150 chars, portugues, cordial, sem emojis):"
             )
-            model = os.getenv("LAURA_LLM_MODEL", "qwen2.5:7b")
+            model = os.getenv("LAURA_LLM_MODEL", "llama3.2:3b")
             host = os.getenv("LAURA_OLLAMA_HOST", "http://127.0.0.1:11434")
             resp = requests.post(f"{host}/api/generate", json={"model": model, "prompt": prompt, "stream": False, "options": {"num_predict": 80}}, timeout=15)
             if resp.status_code == 200:

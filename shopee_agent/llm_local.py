@@ -161,7 +161,7 @@ def _parse_ollama_table(stdout: str) -> list[str]:
     return items
 
 
-def get_ollama_status(model: str = "tinyllama") -> dict[str, Any]:
+def get_ollama_status(model: str = "llama3.2:3b") -> dict[str, Any]:
     """Collect a concise Ollama runtime status report."""
     service_running = check_ollama_running()
     installed_models: list[str] = []
@@ -207,7 +207,7 @@ def get_ollama_status(model: str = "tinyllama") -> dict[str, Any]:
         "timestamp": datetime.now(UTC).isoformat(),
         "service_running": service_running,
         "requested_model": model,
-        "default_model": os.getenv("LAURA_LLM_MODEL", "tinyllama"),
+        "default_model": os.getenv("LAURA_LLM_MODEL", "llama3.2:3b"),
         "installed_models": installed_models,
         "loaded_models": loaded_models,
         "model_installed": model.split(":")[0] in {m.split(":")[0] for m in installed_models},
@@ -265,7 +265,7 @@ class LauraOllamaAnalyzer:
 
     def __init__(self, model: str = "", base_url: str | None = None, pull_model: bool = True, llm_engine: LLMEngine | None = None):
         if not model:
-            model = os.getenv("LAURA_LLM_MODEL", "tinyllama")
+            model = os.getenv("LAURA_LLM_MODEL", "llama3.2:3b")
         """
         Inicializa o analisador Ollama.
         
@@ -974,7 +974,7 @@ Por favor, analise os dados e forneça uma decisão estruturada em JSON.
         return asdict(result)
 
 
-def create_analyzer(model: str = "tinyllama") -> LauraOllamaAnalyzer:
+def create_analyzer(model: str = "llama3.2:3b") -> LauraOllamaAnalyzer:
     return LauraOllamaAnalyzer(model=model)
 
 
@@ -989,13 +989,13 @@ def ask_local(prompt: str, max_tokens: int = 300, model: str = "") -> str | dict
     Args:
         prompt: Texto completo do prompt
         max_tokens: Maximo de tokens na resposta
-        model: Modelo (padrao: LAURA_LLM_MODEL ou qwen2.5:7b)
+        model: Modelo (padrao: LAURA_LLM_MODEL ou llama3.2:3b)
 
     Returns:
         str com o texto da resposta, ou dict se houve erro
     """
     import requests as _req
-    _model = model or os.getenv("LAURA_LLM_MODEL", "qwen2.5:7b")
+    _model = model or os.getenv("LAURA_LLM_MODEL", "llama3.2:3b")
 
     # Try LLMEngine first
     try:

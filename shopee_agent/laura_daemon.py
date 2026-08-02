@@ -18,6 +18,7 @@ from typing import Optional
 
 import requests
 
+from shopee_agent.ceo_mode import ceo_mode_enabled
 from shopee_agent.graceful_shutdown import GracefulShutdown
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -223,7 +224,7 @@ class LauraDaemon:
         Keeps the LLM GPU active and sends periodic store insights to Telegram.
         """
         llm_insights_path = self._reports_dir / "laura_llm_insights.jsonl"
-        llm_model = os.getenv("LAURA_LLM_MODEL", "qwen2.5:7b")
+        llm_model = os.getenv("LAURA_LLM_MODEL", "llama3.2:3b")
         ollama_host = os.getenv("LAURA_OLLAMA_HOST", "http://127.0.0.1:11434")
         import time as _time
         _time.sleep(15)
@@ -813,7 +814,7 @@ class LauraDaemon:
         if agora - self._last_profitability > 24 * 3600:
             try:
                 from shopee_agent.llm_local import LauraOllamaAnalyzer
-                llm_model = os.getenv("LAURA_LLM_MODEL", "qwen2.5:7b")
+                llm_model = os.getenv("LAURA_LLM_MODEL", "llama3.2:3b")
                 analyzer = LauraOllamaAnalyzer(model=llm_model)
                 metrics = {
                     "revenue": result.get("cycle_result", {}).get("revenue", 0),
@@ -1098,6 +1099,8 @@ class LauraDaemon:
         self._shutdown.setup_signal_handlers()
 
         self._running = True
+        if ceo_mode_enabled():
+            print("[LauraDaemon] 🚀 CEO MODE ATIVO — acoes executadas sem aprovacao humana")
         print(f"[LauraDaemon] Started (interval={CYCLE_INTERVAL}s)")
         info("Daemon started", interval=CYCLE_INTERVAL)
 

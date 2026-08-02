@@ -93,7 +93,7 @@ class AutoResponseEngine:
 
     def _generate_contextual_response_local(self, *, rating: int, comment: str, order_id: str) -> str:
         """Generate a non-template, contextual response using local Ollama (cost zero)."""
-        model = os.getenv("LAURA_LLM_MODEL", "tinyllama")
+        model = os.getenv("LAURA_LLM_MODEL", "llama3.2:3b")
         timeout_seconds = int(os.getenv("LAURA_AUTO_RESPONSE_LLM_TIMEOUT_SECONDS", "5"))
         prompt = (
             "Você é atendente de loja Shopee. Escreva UMA resposta curta e humana ao comprador, "
