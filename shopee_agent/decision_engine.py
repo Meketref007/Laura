@@ -553,10 +553,10 @@ class DecisionEngine:
         guardrails["inventory_healthy"] = context.stock_risk_level != "critical"
 
         # Risk guardrails
-        guardrails["acceptable_risk"] = decision.risk_score <= 0.8
+        guardrails["acceptable_risk"] = decision.risk_score <= 0.6
 
         # Operational guardrails
-        guardrails["reasonable_confidence"] = decision.confidence_score >= 0.5
+        guardrails["reasonable_confidence"] = decision.confidence_score >= 0.6
 
         # Decision-specific guardrails
         if decision.decision_type == DecisionType.PRICING:

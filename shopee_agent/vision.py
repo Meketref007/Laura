@@ -30,7 +30,7 @@ from typing import Any
 import requests
 
 OLLAMA_HOST = os.getenv("OLLAMA_HOST", "http://127.0.0.1:11434")
-VISION_MODEL = os.getenv("LAURA_VISION_MODEL", "bakllava:7b")
+VISION_MODEL = os.getenv("LAURA_VISION_MODEL", "moondream")
 TEMP_DIR = Path(tempfile.gettempdir()) / "laura_vision"
 TEMP_DIR.mkdir(parents=True, exist_ok=True)
 CACHE_DIR = Path(__file__).resolve().parent.parent.parent / "reports"
@@ -129,7 +129,7 @@ class LauraVision:
     """Vision agent powered by Ollama multimodal models."""
 
     def __init__(self, model: str | None = None):
-        self.model = model or os.getenv("LAURA_VISION_MODEL", "bakllava:7b")
+        self.model = model or os.getenv("LAURA_VISION_MODEL", "moondream")
 
     # --- low-level ---
 

@@ -399,14 +399,17 @@ class AutonomousLoop:
 
         decisions_list = list(engine.pending_decisions.values())
 
-        # Modo CEO: auto-aprova decisoes pendentes (sem aprovacao humana)
+        # Modo CEO: auto-aprova decisoes pendentes seguras (risco baixo, confianca alta)
         if self.ceo_mode:
             auto_approved = 0
             for d in decisions_list:
                 try:
-                    if d.status == DecisionStatus.PENDING:
-                        d.status = DecisionStatus.APPROVED
-                        auto_approved += 1
+                    if d.status != DecisionStatus.PENDING:
+                        continue
+                    if d.risk_score > 0.6 or d.confidence_score < 0.6:
+                        continue
+                    d.status = DecisionStatus.APPROVED
+                    auto_approved += 1
                 except Exception:
                     continue
             if auto_approved:
@@ -422,14 +425,15 @@ class AutonomousLoop:
         # Notificar apenas decisoes PENDING de alta prioridade (1x por titulo)
         for d in decisions_list:
             try:
-                if self.ceo_mode:
+                if d.status != DecisionStatus.PENDING:
                     continue
-                if d.status == DecisionStatus.PENDING and d.priority in (DecisionPriority.HIGH, DecisionPriority.CRITICAL):
-                    title_key = f"pending_approval_{d.title}"
-                    if title_key not in self._sent_approvals:
-                        text = f"⚠️ Aprovação necessária: {d.title} (id={d.decision_id})"
-                        self._send_telegram(text)
-                        self._sent_approvals[title_key] = time.time()
+                if d.priority not in (DecisionPriority.HIGH, DecisionPriority.CRITICAL):
+                    continue
+                title_key = f"pending_approval_{d.title}"
+                if title_key not in self._sent_approvals:
+                    text = f"⚠️ Aprovação necessária: {d.title} (id={d.decision_id})"
+                    self._send_telegram(text)
+                    self._sent_approvals[title_key] = time.time()
             except Exception:
                 continue
 
@@ -513,7 +517,8 @@ class AutonomousLoop:
                         metadata={"source": "autonomous_loop"},
                     ))
 
-        approvals = self._analyze(state).get("approval", []) if isinstance(self._analyze(state), dict) else []
+        _analysis = self._analyze(state)
+        approvals = _analysis.get("approval", []) if isinstance(_analysis, dict) else []
         orders_by_sn = {str(o.get("order_sn", "")): o for o in state.get("orders", []) if isinstance(o, dict)}
         for a in approvals:
             order_sn = a.get("order_sn")

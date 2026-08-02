@@ -129,7 +129,7 @@ def garantir_todos_modelos() -> bool:
     modelos = [
         os.getenv("LAURA_LLM_MODEL", "llama3.2:3b"),
     ]
-    vision = os.getenv("LAURA_VISION_MODEL", "bakllava:7b").strip()
+    vision = os.getenv("LAURA_VISION_MODEL", "moondream").strip()
     if vision and vision != "none":
         modelos.append(vision)
 

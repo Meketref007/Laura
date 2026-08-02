@@ -2,10 +2,10 @@
 
 [![CI](https://github.com/Meketref007/Laura/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Meketref007/Laura/actions/workflows/ci.yml)
 [![Python 3.12](https://img.shields.io/badge/python-3.12-blue?logo=python)](https://www.python.org/)
-[![Tests](https://img.shields.io/badge/tests-1205%20passing-brightgreen)]()
+[![Tests](https://img.shields.io/badge/tests-1327%20passing-brightgreen)]()
 [![Coverage](https://img.shields.io/badge/coverage-43%25-yellow)]()
 [![Docs](https://img.shields.io/badge/docs-mkdocs-blue.svg)](https://meketref007.github.io/Laura/)
-[![Release](https://img.shields.io/badge/release-v3.0.0-blue.svg)](https://github.com/Meketref007/Laura/releases/tag/v3.0.0)
+[![Release](https://img.shields.io/badge/release-v3.0.0-blue.svg)](pyproject.toml)
 [![Python 3.12+](https://img.shields.io/badge/python-3.12%2B-blue.svg)](pyproject.toml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
@@ -699,8 +699,12 @@ LAURA_CEO_MODE=1
 ```
 
 Cada ação executada continua registrada em `reports/pending_decisions_*.jsonl`
-e é notificada no Telegram com o prefixo *CEO Mode*. Recomendado manter
-`SELLER_CENTER_DRY_RUN=1` até validar o comportamento em produção.
+e é notificada no Telegram com o prefixo *CEO Mode*. Apenas decisões com
+risco baixo (`risk_score <= 0.6`) e confiança alta (`confidence >= 0.6`) são
+auto-aprovadas; as demais continuam exigindo aprovação humana.
+
+**Atenção:** com CEO mode ativo, `SELLER_CENTER_DRY_RUN` é desconsiderado —
+ações do Seller Center (perfil, envio, etc.) são executadas de verdade.
 
 ---
 
@@ -763,6 +767,7 @@ make typecheck   # mypy
 | Variável | Padrão | Descrição |
 |---|---|---|
 | `LAURA_LLM_MODEL` | `llama3.2:3b` | Modelo Ollama |
+| `LAURA_VISION_MODEL` | `moondream` | Modelo de visão (imagens) |
 | `LAURA_OLLAMA_HOST` | `127.0.0.1` | Host do Ollama |
 | `LAURA_OLLAMA_PORT` | `11434` | Porta do Ollama |
 | `LAURA_CEO_MODE` | `0` | `1` = Modo CEO: autonomia total (auto-aprova decisões, executa skills de alta prioridade e envia pedidos prontos sem aprovação humana) |

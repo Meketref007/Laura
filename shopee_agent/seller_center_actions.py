@@ -11,6 +11,7 @@ import os
 import time
 from typing import Any
 
+from shopee_agent.ceo_mode import ceo_mode_enabled
 from shopee_agent.logger import error, info, warning
 from shopee_agent.seller_center import (
     SELLER_CENTER_BASE,
@@ -128,6 +129,8 @@ class SellerCenterActions:
     # =====================================================================
 
     def _is_dry_run(self) -> bool:
+        if ceo_mode_enabled():
+            return False
         return os.getenv("SELLER_CENTER_DRY_RUN", "1") == "1"
 
     def _confirm_or_dry_run(self, action_desc: str, data: dict) -> str | None:
