@@ -67,7 +67,32 @@ try {
         & "$codeDir\scripts\laura-services.ps1" stop *> $null
     }
 
+    # Remove untracked locais que colidem com arquivos versionados no repo
+    # (ex.: artefatos gerados localmente que viraram parte do projeto).
+    # NUNCA toca em dados gitignorados (.env, secrets, data, reports, backups, logs).
+    $remoteFiles = @(git -C $codeDir ls-tree -r --name-only origin/main 2>$null)
+    $untracked = @(git -C $codeDir ls-files --others --exclude-standard 2>$null)
+    foreach ($f in $untracked) {
+        if ($remoteFiles -contains $f) {
+            Say "[update] Removendo arquivo local que colide com o repo: $f"
+            Remove-Item (Join-Path $codeDir $f) -Force -ErrorAction SilentlyContinue
+        }
+    }
+
     git -C $codeDir pull --ff-only origin main 2>&1 | Out-Null
+    if ($LASTEXITCODE -ne 0) {
+        Say "[update] Primeiro pull falhou; normalizando repositorio local e tentando de novo..."
+        # Descarta mudancas locais em arquivos rastreados (a instalacao espelha o repo).
+        # Dados locais (.env, secrets, data, reports, backups, logs) sao untracked/ignorados e NAO sao tocados.
+        git -C $codeDir checkout -- . 2>&1 | Out-Null
+        $crlf = git -C $codeDir config core.autocrlf
+        if ($crlf -eq "true") {
+            Say "[update] core.autocrlf=true detectado; trocando para false (evita falsos modificados por CRLF)"
+            git -C $codeDir config core.autocrlf false
+            git -C $codeDir checkout -- . 2>&1 | Out-Null
+        }
+        git -C $codeDir pull --ff-only origin main 2>&1 | Out-Null
+    }
     if ($LASTEXITCODE -ne 0) {
         Say "[update] git pull FALHOU. Restaurando servicos..."
         if (-not $SkipRestart) { & "$codeDir\scripts\laura-services.ps1" start *> $null }
