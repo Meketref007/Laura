@@ -34,13 +34,13 @@ Name: "{userdesktop}\Laura Painel"; Filename: "{app}\code\.venv\Scripts\pythonw.
 
 [Run]
 ; 1a execucao: venv, dependencias, migracao de dados, agendamento, boot, servicos
-Filename: "powershell.exe"; Parameters: "-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File ""{app}\code\installer\install.ps1"" -SkipClone -Force -NoShortcut"; StatusMsg: "Configurando Laura (venv, dependencias, dados, agendamento)..."; Flags: waituntilterminated runhidden
+Filename: "powershell.exe"; Parameters: "-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File ""{app}\code\installer\install.ps1"" -SkipClone -Force -NoShortcut -InstallDir ""{app}"""; StatusMsg: "Configurando Laura (venv, dependencias, dados, agendamento)..."; Flags: waituntilterminated runhidden
 ; abrir o painel ao final (checkbox opcional)
 Filename: "{app}\code\.venv\Scripts\pythonw.exe"; Parameters: """{app}\code\installer\laura_painel.pyw"""; Description: "Abrir o Painel de Controle da Laura"; Flags: nowait postinstall skipifsilent
 
 [UninstallRun]
 ; para servicos + remove tarefa agendada + VBS de boot (dados sao mantidos)
-Filename: "powershell.exe"; Parameters: "-NoProfile -ExecutionPolicy Bypass -Command ""& '{app}\code\scripts\laura-services.ps1' stop; schtasks /Delete /TN 'Laura Update' /F 2>$null | Out-Null; Remove-Item -LiteralPath '{app}\iniciar_laura.vbs' -Force -ErrorAction SilentlyContinue"""; Flags: runhidden
+Filename: "powershell.exe"; Parameters: "-NoProfile -ExecutionPolicy Bypass -Command ""& '{app}\code\scripts\laura-services.ps1' stop; schtasks /Delete /TN 'Laura Update' /F 2>$null | Out-Null; Remove-Item -LiteralPath '{app}\iniciar_laura.vbs' -Force -ErrorAction SilentlyContinue"""; Flags: runhidden; RunOnceId: "laura-uninstall-cleanup"
 
 [UninstallDelete]
 ; remove venv e git, mantem dados (logs, secrets, reports, backups, .env)

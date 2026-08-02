@@ -17,6 +17,7 @@ $iconScript = Join-Path $env:TEMP "laura_make_icon.py"
 @'
 from PIL import Image, ImageDraw, ImageFont
 import os
+import sys
 
 SIZE = 512
 img = Image.new("RGBA", (SIZE, SIZE), (0, 0, 0, 0))
@@ -45,13 +46,13 @@ w = bbox[2] - bbox[0]
 h = bbox[3] - bbox[1]
 d.text(((SIZE - w) / 2, (SIZE - h) / 2 - bbox[1]), "L", font=font, fill=(255, 255, 255, 255))
 
-out_ico = os.path.join(os.path.dirname(os.path.abspath(__file__)), "laura_icon.ico")
+out_ico = sys.argv[1]
 img.save(out_ico, format="ICO", sizes=[(16, 16), (24, 24), (32, 32), (48, 48), (64, 64), (128, 128), (256, 256)])
 print("icone: " + out_ico)
 '@ | Out-File -FilePath $iconScript -Encoding UTF8
 
 $iconOut = Join-Path $issDir "laura_icon.ico"
-& $py $iconScript
+& $py $iconScript $iconOut
 if (-not (Test-Path $iconOut)) {
     Write-Host "ERRO: falha ao gerar o icone (PIL instalado?). pip install pillow" -ForegroundColor Red
     exit 1
@@ -73,7 +74,7 @@ if (-not $isccPath) {
 if (-not $isccPath) {
     Write-Host "Baixando Inno Setup..."
     $dl = Join-Path $env:TEMP "inno-setup.exe"
-    Invoke-WebRequest -UseBasicParsing -Uri "https://jrsoftware.org/download.php/is.exe" -OutFile $dl
+    Invoke-WebRequest -UseBasicParsing -Uri "https://github.com/jrsoftware/issrc/releases/download/is-6_7_3/innosetup-6.7.3.exe" -OutFile $dl
     $instDir = Join-Path $env:LOCALAPPDATA "Laura\innosetup"
     Write-Host "Instalando Inno Setup em $instDir (silencioso)..."
     Start-Process -FilePath $dl -ArgumentList "/VERYSILENT", "/SUPPRESSMSGBOXES", "/NORESTART", "/DIR=`"$instDir`"" -Wait
