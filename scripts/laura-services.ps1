@@ -94,7 +94,7 @@ function Show-Status {
         $cmd = $p.CommandLine
         $label = if ($cmd -match "webhook-start") { "webhook" }
                  elseif ($cmd -match "telegram-bot") { "telegram" }
-                 elseif ($cmd -match "laura_daemon") { "daemon" }
+                 elseif ($cmd -match "laura_daemon|shopee_agent\.cli daemon") { "daemon" }
                  elseif ($cmd -match "laura_watchdog") { "watchdog" }
                  else { "outro" }
         "{0,-9} PID {1,-7} {2}" -f $label, $p.ProcessId, ($cmd -replace [regex]::Escape($codeDir), ".").Trim() | ForEach-Object { Write-Host $_ }

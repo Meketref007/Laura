@@ -56,7 +56,8 @@ try {
 
     $shortLocal = $local.Substring(0, 7)
     $shortRemote = $remote.Substring(0, 7)
-    $filesChanged = @(git -C $codeDir diff --name-only $local..$remote)
+    $range = "$local..$remote"
+    $filesChanged = @(git -C $codeDir diff --name-only $range 2>$null)
     $depsChanged = @($filesChanged | Where-Object { $_ -match "^(pyproject\.toml|requirements.*\.txt)$" })
 
     Say "[update] Nova versao disponivel: $shortLocal -> $shortRemote ($($filesChanged.Count) arquivos)"
