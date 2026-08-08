@@ -65,3 +65,66 @@ def test_planning_worker_executes_phases():
     bus.stop()
 
     assert bus.stats().failed == 0
+
+
+def test_orchestration_worker_builds_valid_decision():
+    """Regression: Decision.__init__ requires many mandatory args (rule_id,
+    recommended_action, impact_score, risk_score, confidence_score, signal).
+    OrchestrationWorker must build a well-formed Decision for the executor."""
+    from types import SimpleNamespace
+
+    from shopee_agent.decision_engine import Decision, DecisionType, DecisionStatus
+    from shopee_agent.workers import OrchestrationWorker
+
+    bus = AsyncEventBus(worker_count=1)
+    bus.start()
+    executor = FakeExecutor()
+    ow = OrchestrationWorker(bus, executor=executor)
+
+    action = SimpleNamespace(
+        action_id="act_1",
+        agent_name="pricing",
+        action_type="price_change",
+        target="item_123",
+        direction="up",
+        magnitude=5,
+        rationale="raise 5% to protect margin",
+        priority=4,
+    )
+    assert ow._execute_action(action) is True
+    bus.stop()
+
+    assert len(executor.executed) == 1
+    dec = executor.executed[0]
+    assert isinstance(dec, Decision)
+    assert dec.decision_type == DecisionType.PRICING
+    assert dec.status == DecisionStatus.APPROVED
+    assert dec.rule_id == "orchestration_worker"
+    assert dec.recommended_action
+    assert dec.signal is not None
+    assert dec.metadata["source"] == "orchestration_worker"
+
+
+def test_orchestration_worker_handles_executor_failure():
+    from types import SimpleNamespace
+
+    from shopee_agent.workers import OrchestrationWorker
+
+    bus = AsyncEventBus(worker_count=1)
+    bus.start()
+    executor = FakeExecutor()
+    executor.fail = True
+    ow = OrchestrationWorker(bus, executor=executor)
+
+    action = SimpleNamespace(
+        action_id="act-2",
+        agent_name="ads",
+        action_type="increase_ad_budget",
+        target="ad_campaign_1",
+        direction="up",
+        magnitude=10,
+        rationale="boost campaign",
+        priority=2,
+    )
+    assert ow._execute_action(action) is False
+    bus.stop()

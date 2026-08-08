@@ -28,6 +28,18 @@ schtasks /Delete /TN "Laura Services" /F 2>$null | Out-Null
 schtasks /Delete /TN "Laura Update Boot" /F 2>$null | Out-Null
 Write-Host "Tarefas agendadas da Laura removidas."
 
+# 2b. Remove o CLI do PATH do usuario
+$cliDir = Join-Path $InstallDir "bin"
+$userPath = [Environment]::GetEnvironmentVariable("Path", "User")
+if ($userPath) {
+    $parts = $userPath -split ";" | Where-Object { $_ -and $_.TrimEnd("\") -ne $cliDir }
+    $newPath = ($parts -join ";").TrimEnd(";")
+    if ($newPath -ne $userPath) {
+        [Environment]::SetEnvironmentVariable("Path", $newPath, "User")
+        Write-Host "CLI 'laura' removido do PATH do usuario."
+    }
+}
+
 # 3. Atalhos
 $wsh = New-Object -ComObject WScript.Shell
 $startupDir = [Environment]::GetFolderPath("Startup")

@@ -34,7 +34,7 @@ jobs:
         run: ruff check shopee_agent/ --line-length=120
 
       - name: Test with pytest
-        run: python -m pytest tests/ -q --tb=short --ignore=tests/_archive -k "not test_memory_summary_command" -m "not integration" --junitxml=junit.xml -o junit_family=legacy --cov=shopee_agent --cov-report=xml --cov-report=term-missing --cov-fail-under=30
+        run: python -m pytest tests/ -q --tb=short --ignore=tests/_archive -k "not test_memory_summary_command" -m "not integration" --junitxml=junit.xml -o junit_family=legacy --cov=shopee_agent --cov-report=xml --cov-report=term-missing --cov-fail-under=38
 
       - name: Upload test results
         if: always()
@@ -182,11 +182,35 @@ jobs:
           & (Join-Path $env:LAURA_HOME "scripts\laura-services.ps1") stop
           if (Test-Path $env:LAURA_HOME) { Remove-Item -Recurse -Force $env:LAURA_HOME }
 
+  e2e-real:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install --no-cache-dir --no-binary annoy -e ".[dev]"
+      - name: Smoke test real contra a Shopee (opt-in via secrets)
+        run: python -m pytest tests/integration/test_e2e_shopee_real.py -m integration -q --tb=short -rs
+        env:
+          LAURA_E2E_REAL: ${{ secrets.LAURA_E2E_REAL }}
+          SHOPEE_PARTNER_ID: ${{ secrets.SHOPEE_PARTNER_ID }}
+          SHOPEE_PARTNER_KEY: ${{ secrets.SHOPEE_PARTNER_KEY }}
+          SHOPEE_REDIRECT_URL: ${{ secrets.SHOPEE_REDIRECT_URL }}
+          SHOPEE_DEFAULT_SHOP_ID: ${{ secrets.SHOPEE_DEFAULT_SHOP_ID }}
+          SHOPEE_DEFAULT_ACCESS_TOKEN: ${{ secrets.SHOPEE_DEFAULT_ACCESS_TOKEN }}
+
   release:
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: windows-latest
     timeout-minutes: 30
-    needs: [test, mypy, integration, pester, build-setup, install-e2e]
+    needs: [test, mypy, integration, pester, build-setup, install-e2e, e2e-real]
     permissions:
       contents: write
     steps:

@@ -11,7 +11,13 @@ from typing import Any
 import requests
 
 from shopee_agent.ceo_mode import ceo_mode_enabled
-from shopee_agent.decision_engine import DecisionEngine, DecisionPriority, DecisionStatus, create_default_rules
+from shopee_agent.decision_engine import (
+    DecisionEngine,
+    DecisionPriority,
+    DecisionSignal,
+    DecisionStatus,
+    create_default_rules,
+)
 from shopee_agent.decision_integration import DecisionExecutor, DecisionIntegrator
 
 from .client import ShopeeClient
@@ -51,6 +57,31 @@ try:
     from shopee_agent.learning_system import LearningSystem
 except ImportError:
     LearningSystem = None
+
+try:
+    from shopee_agent.economic_brain import EconomicBrain
+except ImportError:
+    EconomicBrain = None
+
+try:
+    from shopee_agent.supply_chain_planner import SupplyChainPlanner
+except ImportError:
+    SupplyChainPlanner = None
+
+try:
+    from shopee_agent.autonomous_strategy import AutonomousStrategyLayer
+except ImportError:
+    AutonomousStrategyLayer = None
+
+try:
+    from shopee_agent.goal_management import GoalManager, PriorityEngine
+except ImportError:
+    GoalManager, PriorityEngine = None, None
+
+try:
+    from shopee_agent.planner import Planner
+except ImportError:
+    Planner = None
 
 try:
     from shopee_agent.flash_sale_recommender import FlashSaleRecommender
@@ -122,6 +153,39 @@ class AutonomousLoop:
                 reports_dir=self.reports_dir,
             )
             if FlashSaleRecommender is not None
+            else None
+        )
+        self._economic_brain = (
+            EconomicBrain(
+                latest_path=str(self.reports_dir / "laura_profitability_latest.json"),
+                history_path=str(self.reports_dir / "laura_profitability_history.jsonl"),
+            )
+            if EconomicBrain is not None
+            else None
+        )
+        self._supply_chain_planner = (
+            SupplyChainPlanner(
+                reports_dir=str(self.reports_dir),
+                predictive_analytics=self._predictive_analytics,
+            )
+            if SupplyChainPlanner is not None
+            else None
+        )
+        self._planner = Planner() if Planner is not None else None
+        self._goal_manager = (
+            GoalManager(path=str(self.reports_dir / "goals_state.jsonl"))
+            if GoalManager is not None
+            else None
+        )
+        self._priority_engine = PriorityEngine() if PriorityEngine is not None else None
+        self._autonomous_strategy = (
+            AutonomousStrategyLayer(
+                goal_manager=self._goal_manager,
+                predictive_analytics=self._predictive_analytics,
+                competitive_intelligence=self._competitive_intelligence,
+                branding_growth=self._branding_growth,
+            )
+            if AutonomousStrategyLayer is not None
             else None
         )
         self._last_flash_sale_scan: datetime | None = None
@@ -415,6 +479,12 @@ class AutonomousLoop:
                 strategic_planner=self._strategic_planner,
                 agent_orchestrator=self._agent_orchestrator,
                 branding_growth=self._branding_growth,
+                economic_brain=self._economic_brain,
+                supply_chain_planner=self._supply_chain_planner,
+                autonomous_strategy=self._autonomous_strategy,
+                planner=self._planner,
+                goal_manager=self._goal_manager,
+                priority_engine=self._priority_engine,
             )
 
         cycle_result = integrator.process_cycle()
@@ -446,9 +516,24 @@ class AutonomousLoop:
                         decision = __import__("shopee_agent.decision_engine", fromlist=["Decision"]).Decision(
                             decision_id=f"orchestr_{action.action_id}",
                             title=f"[Orchestrator] {action.agent_name}: {action.action_type}",
+                            description=getattr(action, "rationale", ""),
                             decision_type=dtype,
+                            rule_id="agent_orchestrator",
                             recommended_action=action.rationale,
                             priority=DecisionPriority.MEDIUM,
+                            impact_score=0.6,
+                            risk_score=0.4,
+                            confidence_score=0.75,
+                            signal=DecisionSignal(
+                                source="agent_orchestrator",
+                                signal_type="orchestrated_action",
+                                data={
+                                    "agent": action.agent_name,
+                                    "action_type": action.action_type,
+                                    "direction": action.direction,
+                                    "magnitude": action.magnitude,
+                                },
+                            ),
                             status=DecisionStatus.APPROVED,
                             metadata={
                                 "source": "agent_orchestrator",
@@ -554,9 +639,19 @@ class AutonomousLoop:
                             dummy = __import__("shopee_agent.decision_engine", fromlist=["Decision"]).Decision(
                                 decision_id=f"auto_skill_{r['skill']}_{int(time.time())}",
                                 title=f"AutoSkill: {r['skill']}",
+                                description=r.get("result", ""),
                                 decision_type=DecisionType.ALERTS,
+                                rule_id="auto_orchestrator",
                                 recommended_action=r.get("result", ""),
                                 priority=DecisionPriority.LOW,
+                                impact_score=0.5,
+                                risk_score=0.2,
+                                confidence_score=0.8,
+                                signal=DecisionSignal(
+                                    source="auto_orchestrator",
+                                    signal_type="skill_executed",
+                                    data={"skill": r["skill"]},
+                                ),
                                 status=DecisionStatus.APPROVED,
                                 metadata={"skill": r["skill"], "source": "auto_orchestrator"},
                             )

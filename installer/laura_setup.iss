@@ -2,7 +2,7 @@
 ; Compile: powershell -File build_setup.ps1  (baixa o Inno se necessario)
 
 #ifndef AppVersion
-#define AppVersion "3.1.0"
+#define AppVersion "3.4.0"
 #endif
 #define AppName "Laura"
 #define AppPublisher "Meketref"

@@ -323,7 +323,13 @@ class OrchestrationWorker(BaseWorker):
         """Map an AgentAction to a DecisionExecutor call or direct API."""
         executor = self._executor
         if executor is not None:
-            from shopee_agent.decision_engine import Decision, DecisionType
+            from shopee_agent.decision_engine import (
+                Decision,
+                DecisionPriority,
+                DecisionSignal,
+                DecisionStatus,
+                DecisionType,
+            )
             action_type_str = getattr(action, "action_type", "") or ""
             if "price" in action_type_str.lower():
                 dt = DecisionType.PRICING
@@ -334,18 +340,40 @@ class OrchestrationWorker(BaseWorker):
             else:
                 dt = DecisionType.ALERTS
 
+            try:
+                priority_enum = DecisionPriority(int(getattr(action, "priority", 3)))
+            except Exception:
+                priority_enum = DecisionPriority.MEDIUM
+            direction = getattr(action, "direction", "") or ""
+            magnitude = getattr(action, "magnitude", 0) or 0
+
             dec = Decision(
                 decision_id=getattr(action, "action_id", f"orch_{id(action)}"),
                 decision_type=dt,
+                rule_id="orchestration_worker",
                 title=f"{getattr(action, 'agent_name', '?')}: {action_type_str} on {getattr(action, 'target', '?')}",
                 description=getattr(action, "rationale", ""),
-                priority=getattr(action, "priority", 3),
-                status="pending",
+                recommended_action=getattr(action, "rationale", ""),
+                priority=priority_enum,
+                impact_score=0.6,
+                risk_score=0.3 if direction == "up" else 0.5,
+                confidence_score=0.75,
+                signal=DecisionSignal(
+                    source="orchestration_worker",
+                    signal_type="agent_action",
+                    data={
+                        "agent": getattr(action, "agent_name", ""),
+                        "target": getattr(action, "target", ""),
+                        "direction": direction,
+                        "magnitude": magnitude,
+                    },
+                ),
+                status=DecisionStatus.APPROVED,
                 metadata={
                     "agent": getattr(action, "agent_name", ""),
                     "target": getattr(action, "target", ""),
-                    "direction": getattr(action, "direction", ""),
-                    "magnitude": getattr(action, "magnitude", 0),
+                    "direction": direction,
+                    "magnitude": magnitude,
                     "source": "orchestration_worker",
                 },
             )

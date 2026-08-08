@@ -235,8 +235,7 @@ if (-not $NoSchedule) {
 }
 
 # ---------- 5b. Servico sem login (ONSTART, requer admin) ----------
-if ($AsService) {
-    $svcCmd = "powershell.exe -NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File `"$codeDir\scripts\laura-services.ps1`" start"
+if ($AsService) {    $svcCmd = "powershell.exe -NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File `"$codeDir\scripts\laura-services.ps1`" start"
     $svcBootCmd = "powershell.exe -NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File `"$codeDir\scripts\laura-update.ps1`""
     schtasks /Create /TN "Laura Services" /TR "'$svcCmd'" /SC ONSTART /RU SYSTEM /RL HIGHEST /F | Out-Null
     if ($LASTEXITCODE -eq 0) {
@@ -306,6 +305,36 @@ WshShell.Run "powershell.exe -NoProfile -WindowStyle Hidden -ExecutionPolicy Byp
     $startLnk.WorkingDirectory = $codeDir
     $startLnk.Save()
     Say "OK: atalhos do Menu Iniciar criados"
+}
+
+# ---------- 6b. CLI 'laura' no PATH do usuario ----------
+$cliDir = Join-Path $InstallDir "bin"
+New-Item -ItemType Directory -Path $cliDir -Force | Out-Null
+$launcher = Join-Path $cliDir "laura.cmd"
+@"
+@echo off
+rem Laura CLI - encaminha para o ambiente instalado
+set "VENVPY=$codeDir\.venv\Scripts\python.exe"
+if not exist "%VENVPY%" (
+    echo Laura nao instalada. Rode o instalador:
+    echo   powershell -ExecutionPolicy Bypass -File installer\install.ps1
+    pause
+    exit /b 1
+)
+"%VENVPY%" -m shopee_agent.cli %*
+"@ | Out-File -FilePath $launcher -Encoding ASCII
+$userPath = [Environment]::GetEnvironmentVariable("Path", "User")
+$cliAlready = ($userPath -split ";" | Where-Object { $_ -and $_.TrimEnd("\") -eq $cliDir })
+if (-not $cliAlready) {
+    try {
+        $newPath = ($cliDir + ";" + $userPath).TrimEnd(";")
+        [Environment]::SetEnvironmentVariable("Path", $newPath, "User")
+        Say "OK: CLI 'laura' disponivel no PATH do usuario (abra novo terminal)."
+    } catch {
+        Say "WARN: nao consegui adicionar o CLI ao PATH ($_)." -color Yellow
+    }
+} else {
+    Say "OK: CLI 'laura' ja esta no PATH."
 }
 
 # ---------- 7. Inicio ----------

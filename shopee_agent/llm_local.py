@@ -293,17 +293,25 @@ class LauraOllamaAnalyzer:
 
         if not check_ollama_running():
             debug("Ollama not running, attempting to start")
-            if not start_ollama_if_needed(model):
-                log_error("Ollama initialization failed", model=model, base_url=base_url)
-                raise RuntimeError(
-                    f"Ollama não está rodando em {base_url}. "
-                    f"Instale: curl -fsSL https://ollama.ai/install.sh | sh"
+            started = start_ollama_if_needed(model)
+            if not started:
+                warning(
+                    "Ollama unavailable; analyzer will run in heuristica offline mode",
+                    model=model,
+                    base_url=base_url,
                 )
-
-        debug("Ollama is running", model=model)
+            log_error(
+                "Ollama init: roda em modo fallback heurístico (LLM offline)",
+                model=model,
+                base_url=base_url,
+                started=started,
+            )
+            self._ollama_offline = True
+        else:
+            self._ollama_offline = False
 
         # Verificar se modelo está disponível
-        if pull_model and not self._check_model_available():
+        if not self._ollama_offline and pull_model and not self._check_model_available():
             print(f"📥 Baixando modelo {model}... (primeira vez, pode demorar)")
             self._pull_model()
 
@@ -345,6 +353,30 @@ class LauraOllamaAnalyzer:
         return self._is_model_warm()
 
     def _fail_fast_if_unloaded(self, fallback_on_error: bool, metrics: dict[str, Any], prompt_type: str, max_tokens: int) -> LLMAnalysisResult | dict[str, Any] | None:
+        if getattr(self, "_ollama_offline", False):
+            warning(
+                "Ollama offline; returning heuristic fallback",
+                model=self.model,
+                prompt_type=prompt_type,
+            )
+            if not fallback_on_error:
+                raise RuntimeError(
+                    f"Ollama não está rodando em {self.base_url}. "
+                    f"Instale: curl -fsSL https://ollama.ai/install.sh | sh"
+                )
+            if prompt_type == "profitability_analyzer":
+                return self._heuristic_fallback(
+                    metrics=metrics,
+                    prompt_type=prompt_type,
+                    error_reason=f"Ollama não está rodando em {self.base_url}.",
+                    elapsed_ms=0,
+                )
+            return self._heuristic_fallback_dict(
+                metrics=metrics,
+                prompt_type=prompt_type,
+                error_reason=f"Ollama não está rodando em {self.base_url}.",
+                elapsed_ms=0,
+            )
         if not self._check_model_available():
             warning(
                 "Ollama model not available via /api/tags; returning immediate fallback",

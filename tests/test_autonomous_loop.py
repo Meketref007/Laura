@@ -179,7 +179,47 @@ def test_autonomous_loop_wires_agent_orchestrator(tmp_path: Path, monkeypatch) -
         store_id="test",
         metrics_dir=str(tmp_path / "reports"),
         agent_orchestrator=loop._agent_orchestrator,
+        predictive_analytics=loop._predictive_analytics,
+        competitive_intelligence=loop._competitive_intelligence,
+        strategic_planner=loop._strategic_planner,
+        branding_growth=loop._branding_growth,
+        economic_brain=loop._economic_brain,
+        supply_chain_planner=loop._supply_chain_planner,
+        autonomous_strategy=loop._autonomous_strategy,
+        planner=loop._planner,
+        goal_manager=loop._goal_manager,
+        priority_engine=loop._priority_engine,
     )
+
+    # Todos os modulos de ponta devem ter sido instanciados pelo loop
+    for attr in (
+        "_predictive_analytics",
+        "_competitive_intelligence",
+        "_strategic_planner",
+        "_branding_growth",
+        "_economic_brain",
+        "_supply_chain_planner",
+        "_autonomous_strategy",
+        "_planner",
+        "_goal_manager",
+        "_priority_engine",
+    ):
+        assert getattr(loop, attr) is not None, f"{attr} nao instanciado"
+
+    # O integrator deve ter recebido cada modulo
+    for attr in (
+        "predictive_analytics",
+        "competitive_intelligence",
+        "strategic_planner",
+        "branding_growth",
+        "economic_brain",
+        "supply_chain_planner",
+        "autonomous_strategy",
+        "planner",
+        "goal_manager",
+        "priority_engine",
+    ):
+        assert getattr(integrator, attr) is not None, f"{attr} nao conectado"
 
     monkeypatch.setattr(integrator, "collect_signals_from_metrics", lambda: [])
     monkeypatch.setattr(

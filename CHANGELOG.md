@@ -4,6 +4,32 @@ Todas as mudanças relevantes do projeto são documentadas aqui.
 
 O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e o projeto adota [SemVer](https://semver.org/lang/pt-BR/).
 
+## [3.4.0] - 2026-08-08
+
+### Adicionado
+- **Camadas CEO conectadas ao ciclo principal** — o `AutonomousLoop` agora instancia e
+  injeta no `DecisionIntegrator` o `EconomicBrain`, `SupplyChainPlanner`,
+  `AutonomousStrategyLayer`, `Planner`, `GoalManager` e `PriorityEngine` (antes só
+  rodavam via CLI/workers). Todos os snapshots aparecem no `decision_cycle_summary` do log.
+- **Fallback robusto sem Ollama** (`llm_local.py`) — se o Ollama não está rodando, o
+  `LauraOllamaAnalyzer` entra em modo offline e cai no fallback heurístico em vez de
+  levantar `RuntimeError` (não tenta mais baixar o modelo offline).
+- **CLI `laura` no PATH do usuário** — `install.ps1` cria `%LOCALAPPDATA%\Laura\bin\laura.cmd`
+  e o adiciona ao PATH do usuário (botão `laura status`, `laura doctor` em qualquer terminal);
+  `uninstall.ps1` remove o PATH.
+- **Smoke test E2E real opt-in** contra a Shopee Open Platform
+  (`tests/integration/test_e2e_shopee_real.py`) — só roda com `LAURA_E2E_REAL=1` e
+  credenciais via secrets; novo job `e2e-real` no CI (pré-requisito da release).
+- **Roadmap atualizado** (`docs/LAURA_ROADMAP.md`) — marca fases 35-42 como implementadas
+  e define as próximas (43+: hardening, dashboard, multi-loja, marketplace de skills).
+
+### Corrigido
+- **Bug `OrchestrationWorker failed | Decision.__init__() missing 6 required positional
+  arguments`** — `workers.py` e `autonomous_loop.py` construíam `Decision` sem
+  `rule_id`/`recommended_action`/`impact_score`/`risk_score`/`confidence_score`/`signal`:
+  agora `_execute_action` mapeia `AgentAction` → `Decision` completo (testes de regressão).
+- Target de cobertura do CI elevado de 30% para 38% (a suíte cobre 43% hoje).
+
 ## [3.3.0] - 2026-08-02
 
 ### Adicionado
